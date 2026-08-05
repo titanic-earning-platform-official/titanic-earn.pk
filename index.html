@@ -605,7 +605,7 @@
                     </div>
                     <div class="profile-card">
                         <h3>Withdraw Funds</h3>
-                        <p style="font-size:12px; color:#777; margin-bottom:10px;">Limits: Min Rs. 1200 - Max Rs. 50,000</p>
+                        <p id="withdraw-limits-text" style="font-size:12px; color:#777; margin-bottom:10px;">Limits: Min Rs. 1200 - Max Rs. 50,000</p>
                         <select id="w-method" class="form-control" onchange="updateWithdrawPlaceholder()">
                             <option value="EasyPaisa">EasyPaisa</option>
                             <option value="JazzCash">JazzCash</option>
@@ -675,6 +675,12 @@
 
                             <label class="auth-label" style="font-size: 11px; margin-top: 5px;">Required Minimum Level for Withdrawal</label>
                             <input type="number" id="set-req-level" class="form-control" placeholder="10" style="background:#fff; border-color:#bdc3c7;">
+
+                            <label class="auth-label" style="font-size: 11px; margin-top: 5px;">Minimum Withdraw Limit (Rs)</label>
+                            <input type="number" id="set-min-withdraw" class="form-control" placeholder="1200" style="background:#fff; border-color:#bdc3c7;">
+
+                            <label class="auth-label" style="font-size: 11px; margin-top: 5px;">Maximum Withdraw Limit (Rs)</label>
+                            <input type="number" id="set-max-withdraw" class="form-control" placeholder="50000" style="background:#fff; border-color:#bdc3c7;">
 
                             <label class="auth-label" style="color:#2c3e50; margin-top: 10px;"><i class="fas fa-hand-holding-usd"></i> Max Level ("Mex") Daily Salary (Rs)</label>
                             <input type="number" id="set-max-salary" class="form-control" placeholder="250" style="background:#fff; border-color:#bdc3c7;">
@@ -1003,7 +1009,9 @@
             support_email: "titanicearning1@gmail.com", // EDITABLE SUPPORT EMAIL
             withdraw_required_ads: 500,     // DYNAMIC WITHDRAW REQUIREMENT (ADS WATCHED)
             withdraw_required_level: 10,    // DYNAMIC WITHDRAW REQUIREMENT (LEVEL)
-            max_level_salary: 250           // DYNAMIC "MEX" DAILY SALARY VALUE
+            max_level_salary: 250,           // DYNAMIC "MEX" DAILY SALARY VALUE
+            min_withdraw: 1200,             // DYNAMIC MINIMUM WITHDRAW
+            max_withdraw: 50000              // DYNAMIC MAXIMUM WITHDRAW
         };
 
         db.ref('settings').on('value', (snap) => {
@@ -1319,6 +1327,7 @@
             if(pageId == 'page-admin' && userData.role === 'admin') loadAdminUI();
         }
 
+        // ================= NAVIGATION & LAYOUT =================
         function toggleMenu() {
             let sb = document.getElementById('sidebar'); let ov = document.getElementById('sidebarOverlay');
             sb.classList.toggle('open'); ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
@@ -1934,6 +1943,20 @@
 
         function loadWalletUI() { 
             document.getElementById('w-bal').innerText = userData.balance||0; document.getElementById('w-with').innerText = userData.total_withdraw||0; document.getElementById('w-tot').innerText = ((userData.balance||0) + (userData.total_withdraw||0)); 
+            
+            // HIDE/SHOW WITHDRAW LIMITS DYNAMICALLY
+            let limitsTextEl = document.getElementById('withdraw-limits-text');
+            if (limitsTextEl) {
+                if (isPreviewMode || !userData || userData.plan_status !== 'active') {
+                    limitsTextEl.style.display = 'none';
+                } else {
+                    limitsTextEl.style.display = 'block';
+                    let minW = appSettings.min_withdraw !== undefined ? appSettings.min_withdraw : 1200;
+                    let maxW = appSettings.max_withdraw !== undefined ? appSettings.max_withdraw : 50000;
+                    limitsTextEl.innerText = `Limits: Min Rs. ${minW} - Max Rs. ${maxW}`;
+                }
+            }
+
             db.ref('withdrawals').orderByChild('uid').equalTo(currentUserUid).on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); let color = w.status === 'Approved' ? '#2ecc71' : (w.status === 'Rejected' ? '#e74c3c' : '#f39c12'); let rejText = (w.status === 'Rejected' && w.reject_reason) ? `<br><small style="color:#e74c3c;">Reason: ${w.reject_reason}</small>` : ''; html += `<tr><td>${w.date.split(',')[0]}</td><td style="color:red;">-${w.amount}</td><td><span style="background:${color}; color:#fff; padding:3px 6px; border-radius:5px; font-size:10px;">${w.status}</span>${rejText}</td></tr>`; }); } document.getElementById('w-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No history</td></tr>"; });
         }
         
@@ -1980,7 +2003,11 @@
                 err.style.display = 'block'; return;
             }
             
-            if(!amt || amt < 1200) { err.innerText = "Min withdraw Rs. 1200!"; err.style.display='block'; return; }
+            // DYNAMIC WITHDRAW LIMITS VALIDATION
+            let minW = appSettings.min_withdraw !== undefined ? parseInt(appSettings.min_withdraw) : 1200;
+            let maxW = appSettings.max_withdraw !== undefined ? parseInt(appSettings.max_withdraw) : 50000;
+            if(!amt || amt < minW) { err.innerText = `Min withdraw Rs. ${minW}!`; err.style.display='block'; return; }
+            if(amt > maxW) { err.innerText = `Max withdraw Rs. ${maxW}!`; err.style.display='block'; return; }
             if(amt > (userData.balance||0)) { err.innerText = "Insufficient Balance!"; err.style.display='block'; return; }
 
             if (inputPass !== userData.password) {
@@ -2078,6 +2105,8 @@
             
             document.getElementById('set-req-ads').value = appSettings.withdraw_required_ads !== undefined ? appSettings.withdraw_required_ads : 500;
             document.getElementById('set-req-level').value = appSettings.withdraw_required_level !== undefined ? appSettings.withdraw_required_level : 10;
+            document.getElementById('set-min-withdraw').value = appSettings.min_withdraw !== undefined ? appSettings.min_withdraw : 1200;
+            document.getElementById('set-max-withdraw').value = appSettings.max_withdraw !== undefined ? appSettings.max_withdraw : 50000;
             document.getElementById('set-max-salary').value = appSettings.max_level_salary !== undefined ? appSettings.max_level_salary : 250;
 
             document.getElementById('set-fake-users').value = appSettings.base_fake_users !== undefined ? appSettings.base_fake_users : 250080;
@@ -2239,6 +2268,8 @@
             
             let reqAds = parseInt(document.getElementById('set-req-ads').value) || 500;
             let reqLevel = parseInt(document.getElementById('set-req-level').value) || 10;
+            let minW = parseInt(document.getElementById('set-min-withdraw').value) || 1200;
+            let maxW = parseInt(document.getElementById('set-max-withdraw').value) || 50000;
             let maxSalary = parseInt(document.getElementById('set-max-salary').value) || 250;
 
             let baseFakeUsers = parseInt(document.getElementById('set-fake-users').value) || 250080;
@@ -2258,6 +2289,8 @@
                 support_email: supportEmail,
                 withdraw_required_ads: reqAds,
                 withdraw_required_level: reqLevel,
+                min_withdraw: minW,
+                max_withdraw: maxW,
                 max_level_salary: maxSalary,
                 notification_text: notif,
                 admin_name: bName || "M ASLAM",
