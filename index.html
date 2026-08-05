@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TITANIC EARNING PLATFORM</title>
+    
+    <!-- META SUGGESTER / SEO OPTIMIZATION SYSTEM -->
+    <meta name="description" content="Titanic Earning Platform - The absolute best digital invitation-only high-paying online ad-viewing platform. Watch Google Ads, claim bonuses, clear milestone levels, and build your stable daily income stream.">
+    <meta name="keywords" content="Titanic Earning, Titanic Earning Platform, Titanic Earning App, online earning app in Pakistan, earn money online EasyPaisa, watch ads to earn money, SadaPay, JazzCash">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="TITANIC Team">
+    <!-- Open Graph (Facebook / WhatsApp Previews) -->
+    <meta property="og:title" content="TITANIC EARNING PLATFORM - Highly Secure Online Earning Ecosystem">
+    <meta property="og:description" content="Earn high returns securely from the comfort of your home. Premium Google Ads viewing, progression level rewards, daily salaries, and direct withdrawals via EasyPaisa, JazzCash, and SadaPay.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/ship.svg">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
@@ -358,6 +370,25 @@
                         <button onclick="saveProfileDetails()" class="auth-btn-new" style="margin-bottom:0;">Save Name</button>
                     </div>
 
+                    <!-- EMAIL VERIFICATION CARD (NEW SYSTEM) -->
+                    <div class="profile-card">
+                        <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Email Verification</h3>
+                        <p id="email-verify-status" style="font-size:12px; font-weight:bold; margin-bottom:10px;"></p>
+                        
+                        <div id="email-verify-box" style="display:none;">
+                            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                                <button id="btn-request-email-otp" onclick="requestEmailVerificationOTP()" style="background: #34495e; color: white; border: none; border-radius: 6px; padding: 10px; font-size: 13px; cursor: pointer; flex: 1; font-weight: bold;">Request Verification Code</button>
+                            </div>
+                            <p id="email-otp-status-msg" style="font-size: 11px; color: #2ecc71; margin-bottom: 10px; display: none;">Request Sent! Please wait while the admin issues the code.</p>
+                            
+                            <label class="auth-label">Enter Verification Code</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="text" id="prof-email-otp" class="form-control" placeholder="Enter Verification Code" style="flex: 1; margin-bottom:0;">
+                                <button onclick="verifyEmailCode()" style="background: #2ecc71; color: white; border: none; border-radius: 6px; padding: 0 15px; font-size: 14px; cursor: pointer; font-weight: bold;">Verify</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="profile-card">
                         <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Bind Phone</h3>
                         <p id="phone-hint" style="font-size:12px; color:#e74c3c; margin-bottom:10px;">Phone number is required for withdrawals. <b>Cannot be changed later!</b></p>
@@ -506,6 +537,8 @@
                         <div class="rank-tabs-container">
                             <button class="rank-tab active" onclick="switchRankingTab('total_profit', this)">Total Profit</button>
                             <button class="rank-tab" onclick="switchRankingTab('plan', this)">By Plan</button>
+                            <!-- NEW "BY LEVEL" RANK TAB ADDED -->
+                            <button class="rank-tab" onclick="switchRankingTab('level', this)">By Level</button>
                             <button class="rank-tab" onclick="switchRankingTab('invite', this)">Top Invites</button>
                             <button class="rank-tab" onclick="switchRankingTab('withdraw', this)">Today Withdraw</button>
                         </div>
@@ -576,23 +609,16 @@
                         <select id="w-method" class="form-control" onchange="updateWithdrawPlaceholder()">
                             <option value="EasyPaisa">EasyPaisa</option>
                             <option value="JazzCash">JazzCash</option>
-                            <option value="Binance ID">Binance ID</option>
+                            <option value="SadaPay">SadaPay</option>
                         </select>
                         <input type="text" id="w-acc" class="form-control" placeholder="Enter 24-digit IBAN ">
                         <input type="number" id="w-amt" class="form-control" placeholder="Amount (Rs)">
                         
                         <div style="border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px;">
-                            <p style="font-size: 12px; color: #e74c3c; font-weight: bold; margin-bottom: 8px;">2-STEP VERIFICATION REQUIRED</p>
+                            <p style="font-size: 12px; color: #e74c3c; font-weight: bold; margin-bottom: 8px;">VERIFICATION REQUIRED</p>
                             
-                            <label class="auth-label">1. Login Password</label>
+                            <label class="auth-label">Login Password</label>
                             <input type="password" id="w-confirm-pass" class="form-control" placeholder="Enter Login Password">
-                            
-                            <label class="auth-label">2. Email Verification Code</label>
-                            <div style="display: flex; gap: 5px;">
-                                <input type="text" id="w-email-otp" class="form-control" placeholder="Enter Code Received" style="flex: 1;">
-                                <button id="btn-request-otp" onclick="requestWithdrawalOTP()" style="background: #34495e; color: white; border: none; border-radius: 6px; padding: 0 10px; font-size: 11px; cursor: pointer; height: 43px;">Request Code</button>
-                            </div>
-                            <p id="otp-status-msg" style="font-size: 11px; color: #2ecc71; margin-top: 5px; display: none;">Request sent! Check back later for the code.</p>
                         </div>
 
                         <button onclick="requestWithdraw()" class="auth-btn-new" style="margin-top: 20px;">Submit Withdrawal Request</button>
@@ -689,12 +715,12 @@
                         <button onclick="adminSaveSettings()" class="auth-btn-new" style="background:#34495e; margin-bottom:0;"><i class="fas fa-save"></i> Save Settings</button>
                     </div>
 
-                    <!-- OTP MANAGEMENT CARD -->
+                    <!-- EMAIL VERIFICATION REQUESTS CARD (FEATURING BLUE EMAIL COPY & RED OTP REJECT TRIGGERS) -->
                     <div class="admin-card" style="border-left-color: #34495e;">
-                        <h3 style="margin-bottom:10px; color:#34495e;"><i class="fas fa-envelope-shield"></i> Withdrawal OTP Requests</h3>
-                        <p style="font-size:12px; color:#666; margin-bottom:10px;">Send verification codes to users for their email verification.</p>
-                        <div id="admin-otp-requests-list">
-                            <p style="font-size:12px; color:#999;">No active code requests.</p>
+                        <h3 style="margin-bottom:10px; color:#34495e;"><i class="fas fa-envelope-shield"></i> Email Verification Requests</h3>
+                        <p style="font-size:12px; color:#666; margin-bottom:10px;">Send verification codes or reject requests with dynamic reasons.</p>
+                        <div id="admin-email-otp-requests-list">
+                            <p style="font-size:12px; color:#999;">No active verification requests.</p>
                         </div>
                     </div>
 
@@ -847,6 +873,17 @@
             document.execCommand("copy");
             document.body.removeChild(t);
             alert("IBAN Copied Successfully!");
+        }
+
+        // ================= GLOBAL CLIPBOARD HELPER =================
+        function copyToClipboard(val, msg) {
+            let t = document.createElement("input");
+            t.value = val;
+            document.body.appendChild(t);
+            t.select();
+            document.execCommand("copy");
+            document.body.removeChild(t);
+            alert(msg || "Copied successfully!");
         }
 
         // ================= FIREBASE CONFIGURATION =================
@@ -1011,10 +1048,6 @@
         }
 
         // ================= PROGRESSIVE LEVEL SYSTEM ARITHMETIC PROGRESSION =================
-        // Level 1: 100 views -> To clear Lvl 1 & reach Lvl 2 requires 100 watched views.
-        // Level 2: 250 views -> To clear Lvl 2 & reach Lvl 3 requires 250 more watched views.
-        // Continuation: Level L requires: 100 + (L-1)*150 views to pass.
-        // CEO/Admin starts automatically at MAX Level "Mex"
         function getLevelDetails(totalWatched, role) {
             if (role === 'admin') {
                 return {
@@ -1070,7 +1103,8 @@
                 invites: 0,
                 active_invites: 0,
                 videos_watched: 0,
-                daily_ads: {}
+                daily_ads: {},
+                email_verified: false
             };
 
             // Display floating countdown banner
@@ -1220,7 +1254,6 @@
                     updates.balance = (userData.balance || 0) + salaryVal;
                     updates.total_earned = (userData.total_earned || 0) + salaryVal;
                     
-                    // Log salary transaction history record
                     db.ref(`users/${currentUserUid}/earning_history`).push({ 
                         date: new Date().toLocaleString(), 
                         amount: salaryVal, 
@@ -1260,7 +1293,7 @@
 
             if (rewardInterval) clearInterval(rewardInterval); 
             if (planTimerInterval) clearInterval(planTimerInterval);
-            if (expiryCountdownInterval) clearInterval(expiryCountdownInterval); // Clear expiry timer
+            if (expiryCountdownInterval) clearInterval(expiryCountdownInterval); 
 
             document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').style.display = 'none';
             
@@ -1295,12 +1328,10 @@
             document.getElementById('sb-name').innerText = userData.name; 
             document.getElementById('sb-plan').innerText = userData.plan_status === 'active' && plans[userData.plan_id] ? 'Plan: ' + plans[userData.plan_id].name : 'Pending/No Plan'; 
             
-            // SIDEBAR LEVEL INDICATOR FOR DYNAMIC VALUE SHOWN ("Mex" handled dynamically)
             let lvlData = getLevelDetails(userData.videos_watched || 0, userData.role);
             document.getElementById('sidebar-level-indicator').innerText = `(Lvl: ${lvlData.level})`;
         }
 
-        // ================= SHOW PASSWORD LOGIC =================
         function togglePassVisibility() {
             var x = document.getElementById("loginPass");
             if (x.type === "password") {
@@ -1314,10 +1345,7 @@
         function registerUser() {
             let n = document.getElementById('regName').value; 
             let e = document.getElementById('regEmail').value.toLowerCase().trim();
-            
-            // CAPTURE PHONE FROM FIELD
             let ph = document.getElementById('regPhone').value.trim();
-            
             let p = document.getElementById('regPass').value, cp = document.getElementById('regCPass').value;
             let inv = document.getElementById('regInvite').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); 
             let err = document.getElementById('reg-error');
@@ -1370,7 +1398,8 @@
                         total_withdraw: 0, 
                         blocked: false, 
                         block_reason: '',
-                        custom_message: '' 
+                        custom_message: '',
+                        email_verified: false 
                     };
                     db.ref('users/' + newUid).set(newUser).then(() => { currentUserUid = newUid; localStorage.setItem('titanic_fb_uid', newUid); document.getElementById('loading-text').innerText = "Loading securely..."; fetchUserData(); });
                 });
@@ -1384,10 +1413,10 @@
             if (e === ADMIN_EMAIL && p === ADMIN_PASS) {
                 document.getElementById('view-auth').style.display = 'none'; document.getElementById('view-loading').style.display = 'flex'; document.getElementById('loading-text').innerText = "Authenticating Company...";
                 db.ref('users').orderByChild('email').equalTo(e).once('value', (snap) => {
-                    if(snap.exists()) { let uid = Object.keys(snap.val())[0]; db.ref('users/' + uid).update({ password: p, role: 'admin', plan_id: 12, plan_status: 'active' }); currentUserUid = uid; localStorage.setItem('titanic_fb_uid', uid); setTimeout(() => { fetchUserData(); }, 1000);
+                    if(snap.exists()) { let uid = Object.keys(snap.val())[0]; db.ref('users/' + uid).update({ password: p, role: 'admin', plan_id: 12, plan_status: 'active', email_verified: true }); currentUserUid = uid; localStorage.setItem('titanic_fb_uid', uid); setTimeout(() => { fetchUserData(); }, 1000);
                     } else {
                         let newUid = db.ref('users').push().key; let nowTime = Date.now();
-                        let adminUser = { name: "Talha Idrees", email: e, password: p, role: 'admin', balance: 99999, total_earned: 5000000, plan_id: 12, plan_status: 'active', plan_reject_reason: '', payment_num: '', payment_trx: '', renew_plan_id: -1, renew_plan_status: 'none', invite_code: "ADMIN777", referred_by: '', phone: '03000000000', profile_pic: '', invites: 100, active_invites: 100, videos_watched: 0, login_days: 1, last_login_date: getTodayStr(), account_created_at: nowTime, last_claim_weekly: nowTime, last_claim_monthly: nowTime, last_claim_yearly: nowTime, total_withdraw: 150000, blocked: false, block_reason: '', custom_message: '' };
+                        let adminUser = { name: "Talha Idrees", email: e, password: p, role: 'admin', balance: 99999, total_earned: 5000000, plan_id: 12, plan_status: 'active', plan_reject_reason: '', payment_num: '', payment_trx: '', renew_plan_id: -1, renew_plan_status: 'none', invite_code: "ADMIN777", referred_by: '', phone: '03000000000', profile_pic: '', invites: 100, active_invites: 100, videos_watched: 0, login_days: 1, last_login_date: getTodayStr(), account_created_at: nowTime, last_claim_weekly: nowTime, last_claim_monthly: nowTime, last_claim_yearly: nowTime, total_withdraw: 150000, blocked: false, block_reason: '', custom_message: '', email_verified: true };
                         db.ref('users/' + newUid).set(adminUser).then(() => { currentUserUid = newUid; localStorage.setItem('titanic_fb_uid', newUid); setTimeout(() => { fetchUserData(); }, 1000); });
                     }
                 }); return;
@@ -1418,8 +1447,6 @@
                     let p = plans[id];
                     let daily = (p.videos || 10) * (p.ad_reward || 5);
                     let monthly = daily * 30;
-
-                    // CHECK IF PLAN IS ON OR OFF
                     let isOff = (p.status === 'off');
 
                     html += `
@@ -1484,7 +1511,6 @@
                 formCard.style.display = 'block'; statCard.style.display = 'none';
                 selectBox.innerHTML = "";
                 for(let id in plans) { 
-                    // ONLY SHOW ACTIVE PLANS IN RENEWAL
                     if(plans[id].status !== 'off') {
                         let opt = document.createElement('option'); 
                         opt.value = id; 
@@ -1522,7 +1548,6 @@
         function loadDashboardUI() {
             showNotificationIfNeeded();
             
-            // TARGETED MESSAGE LOGIC
             let customNotif = document.getElementById('custom-admin-notif-box');
             if (userData.custom_message && userData.custom_message.trim() !== "") {
                 document.getElementById('custom-notif-content').innerHTML = `<b><i class="fas fa-envelope-open-text"></i> Message From Company:</b><br>${userData.custom_message}`;
@@ -1531,7 +1556,6 @@
                 customNotif.style.display = 'none';
             }
 
-            // PLAN EXPIRY COUNTDOWN LOGIC (3 DAYS BEFORE)
             let timerBox = document.getElementById('expiry-timer-box');
             if (userData.plan_status === 'active' && userData.role !== 'admin' && !isPreviewMode) {
                 let p = plans[userData.plan_id];
@@ -1542,7 +1566,6 @@
                     let now = Date.now();
                     let timeLeft = expiryTime - now;
                     
-                    // Show timer if 3 days (259200000 ms) or less left
                     if (timeLeft > 0 && timeLeft <= 259200000) {
                         timerBox.style.display = 'block';
                         document.getElementById('expiry-countdown-text').innerText = formatTime(timeLeft);
@@ -1561,7 +1584,6 @@
             let p = plans[userData.plan_id]; 
             if(!p) return; 
             
-            // AD REWARD & DAILY LIMIT CALCULATIONS (RANDOM LIMIT OR STANDARD LIMIT)
             let today = getTodayStr();
             let dailyLimit = p.videos;
             let adReward = p.ad_reward;
@@ -1569,11 +1591,9 @@
             if (appSettings.random_ads_enabled) {
                 dailyLimit = getDeterministicRandomAds(currentUserUid || 'PREVIEW', today);
                 let totalDailyEarning = p.videos * p.ad_reward;
-                // dynamic reward scales so the total daily earnings matches purchased plan perfectly
                 adReward = Math.round((totalDailyEarning / dailyLimit) * 100) / 100;
             }
 
-            // SHOW EARNING BREAKDOWN ON DASHBOARD TOO
             let daily = p.videos * p.ad_reward;
             let monthly = daily * 30;
             document.getElementById('active-plan-earnings-summary').innerHTML = `
@@ -1607,13 +1627,11 @@
         }
         
         function playAd(btn, vidId) {
-            // CHECK IF PREVIEW MODE ACTIVE
             if (isPreviewMode) {
                 alert("You are currently in Preview Mode. Register an account and buy a plan to start running video ads and earning!");
                 return;
             }
 
-            // CHECK IF EARNINGS STOPPED
             if(isEarningStopped()) return;
 
             let p = plans[userData.plan_id];
@@ -1631,7 +1649,6 @@
             let runBtn = playerDiv.nextElementSibling; playerDiv.querySelector('.video-overlay').style.display = 'none';
             video.currentTime = 0; video.play(); video.controls = false; runBtn.style.background = "#f39c12";
             
-            // RUN VIDEO DURATION ADJUSTED TO 60 SECONDS (1 MINUTE) WITH REAL TIMER
             let timeLeft = 60; 
             runBtn.innerHTML = `Watching Ad... (${timeLeft}s)`;
             let timer = setInterval(() => {
@@ -1652,12 +1669,100 @@
         // ================= MY PROFILE =================
         function loadMyProfileUI() {
             document.getElementById('prof-disp-name').innerText = userData.name; document.getElementById('prof-name').value = userData.name; document.getElementById('prof-email').value = userData.email; document.getElementById('prof-invite').value = userData.invite_code; 
+            
             let phoneInput = document.getElementById('prof-phone'); let phoneBtn = document.getElementById('btn-save-phone'); let phoneHint = document.getElementById('phone-hint'); phoneInput.value = userData.phone || '';
             if (userData.phone && userData.phone.length > 0) { phoneInput.readOnly = true; phoneInput.style.background = "#eef2f5"; phoneInput.style.color = "#777"; phoneBtn.style.display = "none"; phoneHint.innerHTML = "<i class='fas fa-check-circle'></i> Your phone number is successfully bound."; phoneHint.style.color = "#2ecc71";
             } else { phoneInput.readOnly = false; phoneInput.style.background = "#f9f9f9"; phoneInput.style.color = "#333"; phoneBtn.style.display = "block"; phoneHint.innerHTML = "Phone number is required for withdrawals. <b>Cannot be changed later!</b>"; phoneHint.style.color = "#e74c3c"; }
+            
             let img = document.getElementById('user-pic-img'); let icon = document.getElementById('default-pic-icon'); if(userData.profile_pic) { img.src = userData.profile_pic; img.style.display = 'block'; icon.style.display = 'none'; } else { img.style.display = 'none'; icon.style.display = 'block'; }
             document.getElementById('prof-msg').style.display = 'none'; document.getElementById('pass-err').style.display = 'none';
+
+            // EMAIL VERIFICATION UI UPDATES WITH DYNAMIC STATUS HANDLERS
+            let vStatus = document.getElementById('email-verify-status');
+            let vBox = document.getElementById('email-verify-box');
+            if (userData.email_verified === true || userData.role === 'admin') {
+                vStatus.innerHTML = "<span style='color: #2ecc71;'><i class='fas fa-check-circle'></i> Email is Verified</span>";
+                vBox.style.display = 'none';
+            } else {
+                vStatus.innerHTML = "<span style='color: #e74c3c;'><i class='fas fa-times-circle'></i> Email is Unverified</span>";
+                vBox.style.display = 'block';
+                
+                let otpStatusMsg = document.getElementById('email-otp-status-msg');
+                let requestBtn = document.getElementById('btn-request-email-otp');
+                
+                db.ref('email_otp_requests/' + currentUserUid).once('value', rSnap => {
+                    if (rSnap.exists()) {
+                        let reqData = rSnap.val();
+                        if (reqData.status === 'pending') {
+                            otpStatusMsg.style.display = 'block';
+                            otpStatusMsg.style.color = '#f39c12';
+                            otpStatusMsg.innerText = "Request Sent! Please wait while the admin issues the code.";
+                            requestBtn.disabled = true;
+                            requestBtn.innerText = "Request Pending";
+                        } else if (reqData.status === 'sent') {
+                            otpStatusMsg.style.display = 'block';
+                            otpStatusMsg.style.color = '#2ecc71';
+                            otpStatusMsg.innerText = "Verification Code Issued! Please enter the code below to verify your email.";
+                            requestBtn.disabled = true;
+                            requestBtn.innerText = "Code Issued";
+                        } else if (reqData.status === 'rejected') {
+                            otpStatusMsg.style.display = 'block';
+                            otpStatusMsg.style.color = '#e74c3c';
+                            otpStatusMsg.innerHTML = `Verification Request Rejected!<br><b>Reason:</b> ${reqData.reject_reason || 'N/A'}`;
+                            requestBtn.disabled = false;
+                            requestBtn.innerText = "Re-request Verification Code";
+                        }
+                    } else {
+                        otpStatusMsg.style.display = 'none';
+                        requestBtn.disabled = false;
+                        requestBtn.innerText = "Request Verification Code";
+                    }
+                });
+            }
         }
+
+        // ================= EMAIL VERIFICATION HELPER FUNCTIONS =================
+        function requestEmailVerificationOTP() {
+            if (isPreviewMode) return alert("Verification is disabled in Preview Mode!");
+            const btn = document.getElementById('btn-request-email-otp');
+            btn.disabled = true;
+            btn.innerText = "Requesting...";
+
+            db.ref('email_otp_requests/' + currentUserUid).set({
+                uid: currentUserUid,
+                name: userData.name,
+                email: userData.email,
+                status: 'pending',
+                timestamp: Date.now()
+            }).then(() => {
+                db.ref('users/' + currentUserUid).update({
+                    email_reject_reason: null
+                }).then(() => {
+                    loadMyProfileUI();
+                });
+            });
+        }
+
+        function verifyEmailCode() {
+            if (isPreviewMode) return alert("Verification is disabled in Preview Mode!");
+            let code = document.getElementById('prof-email-otp').value.trim();
+            if (!code) return alert("Please enter the verification code!");
+
+            if (userData.email_verification_code && code === userData.email_verification_code) {
+                db.ref('users/' + currentUserUid).update({
+                    email_verified: true,
+                    email_verification_code: null,
+                    email_reject_reason: null
+                }).then(() => {
+                    db.ref('email_otp_requests/' + currentUserUid).remove();
+                    alert("Email Verified Successfully!");
+                    loadMyProfileUI();
+                });
+            } else {
+                alert("Incorrect verification code!");
+            }
+        }
+
         function saveProfilePhone() { 
             if (isPreviewMode) return alert("Binding phone numbers is disabled in Preview Mode!");
             if(userData.phone) return alert("Phone number is already permanently bound!"); 
@@ -1716,7 +1821,6 @@
             if(!code) return alert("Enter code"); 
             if (code === 'T1A2L3H4A5') { if(userData.role === 'admin') { document.getElementById('promo-input').value = ""; goTo('page-admin'); } else { alert("Access Denied!"); } return; } 
             
-            // CHECK IF EARNINGS STOPPED
             if(isEarningStopped()) return;
 
             if (userData.plan_status !== 'active') return alert("You need an active plan to use Promo Codes!");
@@ -1730,7 +1834,7 @@
             if(!msg) return alert("Please describe your issue."); 
             db.ref(`complaints`).push({ uid: currentUserUid, name: userData.name, date: new Date().toLocaleString(), type: type, message: msg, status: 'Pending', admin_reply: '' }).then(()=>{ document.getElementById('comp-msg').value = ''; alert("Complaint submitted successfully! Waiting for Company reply."); }); 
         }
-        // SUPPORT DESK LOADER
+        
         function loadSupportUI() { 
             if(document.getElementById('support-email-text')) {
                 document.getElementById('support-email-text').innerText = appSettings.support_email || "titanicearning1@gmail.com";
@@ -1740,16 +1844,14 @@
 
         // ================= LEVELS & REWARDS =================
         function loadLevelsUI() {
-            // RETRIEVE USER PROGRESS DETAILS DYNAMICALLY VIA THE HELPER
             let lvlData = getLevelDetails(userData.videos_watched || 0, userData.role);
 
             document.getElementById('lvl-current').innerText = lvlData.level; 
             document.getElementById('lvl-progress').style.width = lvlData.percent + "%"; 
             document.getElementById('lvl-vids').innerText = lvlData.progress;
-            document.getElementById('lvl-required-text').innerText = lvlData.level === 'Mex' ? 'Max' : lvlData.required; // dynamically output current target views
+            document.getElementById('lvl-required-text').innerText = lvlData.level === 'Mex' ? 'Max' : lvlData.required; 
 
             let html = ""; 
-            // Max Level represents having cleared 99 sub-levels
             let completedLevels = (lvlData.level === 'Mex') ? 99 : (lvlData.level - 1); 
             let claimed = userData.level_claims ? Object.values(userData.level_claims) : [];
             for(let i=1; i<=completedLevels; i++) { 
@@ -1773,7 +1875,6 @@
 
         function claimLevel(lvl) { 
             if (isPreviewMode) return alert("Level reward claims are disabled in Preview Mode!");
-            // CHECK IF EARNINGS STOPPED
             if(isEarningStopped()) return;
 
             if (userData.plan_status !== 'active') return alert("You need an active plan to claim level rewards!"); 
@@ -1796,7 +1897,7 @@
             let timings = [ 
                 { id: 'daily', duration: 86400000, last: userData.last_claim_daily || 0, max: 30, count: userData.reward_claims_login||0, amt: 20 }, 
                 { id: 'weekly', duration: 604800000, last: userData.last_claim_weekly||0, max: 30, count: userData.reward_claims_weekly||0, amt: 40 }, 
-                { id: 'monthly', duration: 2592000000, last: userData.last_claim_monthly||0, max: 30, count: userData.reward_claims_monthly||0, amt: 80 }, 
+                { id: 'monthly', duration: 2592000000, last: userData.last_claim_monthly||0, max: 30, count: userData.reward_claims_weekly||0, amt: 80 }, 
                 { id: 'yearly', duration: 31536000000, last: userData.last_claim_yearly||0, max: 10, count: userData.reward_claims_yearly||0, amt: 250 } 
             ]; 
             timings.forEach(t => { 
@@ -1809,7 +1910,6 @@
         }
         function claimReward(type, amount, duration, maxClaims, countKey, lastClaimKey, sourceName) { 
             if (isPreviewMode) return alert("Earning loyalty rewards is disabled in Preview Mode!");
-            // CHECK IF EARNINGS STOPPED
             if(isEarningStopped()) return;
 
             if (userData.plan_status !== 'active') return alert("You need an active plan to claim rewards!"); let now = Date.now(); let fallbackLast = (type === 'daily') ? 0 : (userData ? userData.account_created_at : Date.now()); let last = userData[lastClaimKey] || fallbackLast; let count = userData[countKey]||0; if (count < maxClaims && (now - last) >= duration) { db.ref('users/'+currentUserUid).update({ [countKey]: count+1, [lastClaimKey]: now, balance: (userData.balance||0)+amount }); logEarning(amount, sourceName); alert(`${sourceName} Claimed!`); } 
@@ -1821,48 +1921,42 @@
 
         // ================= WALLET & WITHDRAW =================
         function loadEarningHistoryUI() { let html = ""; if(userData.earning_history) { let arr = Object.values(userData.earning_history); arr.reverse().forEach(e => { html += `<tr><td style="font-size:11px; color:#777;">${e.date.split(',')[0]}</td><td><b>${e.source}</b></td><td style="color:#2ecc71; font-weight:bold;">+Rs. ${e.amount}</td></tr>`; }); } document.getElementById('earning-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No earnings yet.</td></tr>"; }
-        function updateWithdrawPlaceholder() { let method = document.getElementById('w-method').value; let accInput = document.getElementById('w-acc'); if (method === 'Binance ID') { accInput.placeholder = "Enter Binance ID"; } else { accInput.placeholder = "Enter 24-digit IBAN "; } }
+        
+        function updateWithdrawPlaceholder() { 
+            let method = document.getElementById('w-method').value; 
+            let accInput = document.getElementById('w-acc'); 
+            if (method === 'SadaPay') { 
+                accInput.placeholder = "Enter SadaPay Number"; 
+            } else { 
+                accInput.placeholder = "Enter 24-digit IBAN "; 
+            } 
+        }
+
         function loadWalletUI() { 
             document.getElementById('w-bal').innerText = userData.balance||0; document.getElementById('w-with').innerText = userData.total_withdraw||0; document.getElementById('w-tot').innerText = ((userData.balance||0) + (userData.total_withdraw||0)); 
             db.ref('withdrawals').orderByChild('uid').equalTo(currentUserUid).on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); let color = w.status === 'Approved' ? '#2ecc71' : (w.status === 'Rejected' ? '#e74c3c' : '#f39c12'); let rejText = (w.status === 'Rejected' && w.reject_reason) ? `<br><small style="color:#e74c3c;">Reason: ${w.reject_reason}</small>` : ''; html += `<tr><td>${w.date.split(',')[0]}</td><td style="color:red;">-${w.amount}</td><td><span style="background:${color}; color:#fff; padding:3px 6px; border-radius:5px; font-size:10px;">${w.status}</span>${rejText}</td></tr>`; }); } document.getElementById('w-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No history</td></tr>"; });
         }
         
-        // --- WITHDRAWAL OTP SYSTEM ---
-        function requestWithdrawalOTP() {
-            if (isPreviewMode) return alert("Withdrawals are completely disabled in Preview Mode!");
-            if (userData.plan_status !== 'active') return alert("Error: Active plan required to request code.");
-            const btn = document.getElementById('btn-request-otp');
-            btn.disabled = true;
-            btn.innerText = "Requesting...";
-
-            db.ref('otp_requests/' + currentUserUid).set({
-                uid: currentUserUid,
-                name: userData.name,
-                email: userData.email,
-                status: 'pending',
-                timestamp: Date.now()
-            }).then(() => {
-                document.getElementById('otp-status-msg').style.display = 'block';
-                document.getElementById('otp-status-msg').innerText = "Request Sent! The Company will send your code shortly.";
-                btn.innerText = "Sent";
-            });
-        }
-
         function requestWithdraw() {
             if (isPreviewMode) return alert("Withdrawal processing is disabled in Preview Mode!");
             let method = document.getElementById('w-method').value; 
             let acc = document.getElementById('w-acc').value.trim(); 
             let amt = parseInt(document.getElementById('w-amt').value); 
             
-            // Security Verification Fields
             let inputPass = document.getElementById('w-confirm-pass').value;
-            let inputOTP = document.getElementById('w-email-otp').value.trim();
-            
             let err = document.getElementById('wallet-error');
             
             if (userData.plan_status !== 'active') { err.innerText = "Error: You need an active plan to request a withdrawal!"; err.style.display='block'; return; }
             if(!userData.phone) { err.innerText = "Error: Please bind your Phone Number first!"; err.style.display='block'; return; }
             
+            // STRICT EMAIL VERIFICATION ENFORCEMENT (REQUIRED FOR WITHDRAWAL)
+            if ((!userData.email_verified || userData.email_verified !== true) && userData.role !== 'admin') { 
+                err.innerText = "Error: Please verify your Email from 'My Profile' before requesting withdrawal!"; 
+                err.style.display='block'; 
+                alert("Email Verification is strictly required for withdrawals!");
+                return; 
+            }
+
             // 1. ACTIVE INVITE MINIMUM CONDITION VERIFICATION
             let requiredInvites = appSettings.invite_limit !== undefined ? parseInt(appSettings.invite_limit) : 5;
             if((userData.active_invites||0) < requiredInvites && userData.role !== 'admin') { 
@@ -1889,26 +1983,17 @@
             if(!amt || amt < 1200) { err.innerText = "Min withdraw Rs. 1200!"; err.style.display='block'; return; }
             if(amt > (userData.balance||0)) { err.innerText = "Insufficient Balance!"; err.style.display='block'; return; }
 
-            // Verify Login Password
             if (inputPass !== userData.password) {
                 alert("Incorrect Login Password!");
-                return;
-            }
-
-            // Verify Email Code (OTP)
-            if (!userData.withdrawal_email_code || inputOTP !== userData.withdrawal_email_code) {
-                alert("Incorrect Verification Code! Request a new code or wait for admin response.");
                 return;
             }
             
             let todayStr = getTodayStr();
             db.ref('users/'+currentUserUid).update({ 
                 balance: userData.balance - amt, 
-                total_withdraw: (userData.total_withdraw||0) + amt,
-                withdrawal_email_code: null // Clear code after use
+                total_withdraw: (userData.total_withdraw||0) + amt
             }).then(()=>{ 
                 db.ref('withdrawals').push({ uid: currentUserUid, name: userData.name, dateStr: todayStr, date: new Date().toLocaleString(), amount: amt, status: 'Pending', method: method, acc: acc, reject_reason: '' }); 
-                db.ref('otp_requests/' + currentUserUid).remove(); // Clear request
                 alert("Withdrawal request sent successfully!"); 
                 location.reload();
             });
@@ -1941,26 +2026,36 @@
                         if(u.role === 'admin') adminNameDisplay = u.name; 
                         let pNameStr = (u.plan_id >= 0 && plans[u.plan_id]) ? `${plans[u.plan_id].name}` : 'None';
                         if(currentRankingType === 'plan' && u.plan_id != dropdown.value) return; 
+                        
                         if(currentRankingType === 'total_profit') { score = u.total_earned || (u.balance + u.total_withdraw) || 0; if(score > 5000000) score = 5000000; text = (score === 5000000) ? "Rs. 5,000,000 Max" : "Rs. " + score.toLocaleString();
                         } else if(currentRankingType === 'invite') { score = u.invites || 0; if(score > 100) score = 100; text = (score === 100) ? "100 Max" : score + " Invites";
                         } else if(currentRankingType === 'withdraw') { score = u.total_withdraw || 0; if(score > 150000) score = 150000; text = (score === 150000) ? "Rs. 150,000 Max" : "Rs. " + score.toLocaleString();
-                        } else if(currentRankingType === 'plan') { score = u.total_withdraw || 0; if(score > 50000) score = 50000; text = (score === 50000) ? "Rs. 50,000 Max" : "Rs. " + score.toLocaleString(); }
+                        } else if(currentRankingType === 'plan') { score = u.total_withdraw || 0; if(score > 50000) score = 50000; text = (score === 50000) ? "Rs. 50,000 Max" : "Rs. " + score.toLocaleString(); 
+                        } else if(currentRankingType === 'level') { 
+                            let lvlDetails = getLevelDetails(u.videos_watched || 0, u.role);
+                            score = (lvlDetails.level === 'Mex') ? 100 : parseInt(lvlDetails.level);
+                            text = "Level " + lvlDetails.level;
+                        }
                         if(u.role !== 'admin') rankingArray.push({ name: u.name, planName: pNameStr, scoreVal: score, scoreText: text });
                     });
                 }
                 
-                // DYNAMIC REGISTERED ACCOUNTS OVERRIDE FEATURING DATABASE VALUE
                 let baseFakeVal = appSettings.base_fake_users !== undefined ? parseInt(appSettings.base_fake_users) : 250080;
-                document.getElementById('total-fake-users').innerText = (baseFakeVal + realCount).toLocaleString() + "+ Users";
+                document.getElementById('total-fake-users').innerText = (baseFakeVal + realCount).toLocaleString() + " Users";
                 
                 let adminData = { name: `${adminNameDisplay} <span style='background:#e74c3c; color:white; padding:2px 4px; border-radius:3px; font-size:9px;'>CEO</span>`, planName: "LEGENDARY", scoreVal: 9999999, scoreText: "" };
                 for (let i = 0; i < 20; i++) {
                     let pId = (currentRankingType === 'plan') ? parseInt(dropdown.value) : Math.floor(Math.random() * 11) + 1; if(pId == 0) pId = 1; 
                     let score = 0; let text = ""; let pNameStr = plans[pId] ? `${plans[pId].name}` : 'None';
+                    
                     if (currentRankingType === 'total_profit') { adminData.scoreText = "Rs. 5,000,000 Max"; if(i < 5) { score = 5000000; text = "Rs. 5,000,000 Max"; } else { score = Math.floor(1000000 + Math.random() * 3999999); text = "Rs. " + score.toLocaleString(); }
                     } else if (currentRankingType === 'invite') { adminData.scoreText = "100 Max"; if(i < 6) { score = 100; text = "100 Max"; } else { score = Math.floor(50 + Math.random() * 49); text = score + " Invites"; }
                     } else if (currentRankingType === 'withdraw') { adminData.scoreText = "Rs. 150,000 Max"; if(i < 5) { score = 150000; text = "Rs. 150,000 Max"; } else { score = Math.floor(75000 + Math.random() * 74999); text = "Rs. " + score.toLocaleString(); }
-                    } else if (currentRankingType === 'plan') { adminData.scoreText = "Rs. 50,000 Max"; if(i < 8) { score = 50000; text = "Rs. 50,000 Max"; } else { score = Math.floor(1200 + Math.random() * 48000); text = "Rs. " + score.toLocaleString(); } }
+                    } else if (currentRankingType === 'plan') { adminData.scoreText = "Rs. 50,000 Max"; if(i < 8) { score = 50000; text = "Rs. 50,000 Max"; } else { score = Math.floor(1200 + Math.random() * 48000); text = "Rs. " + score.toLocaleString(); } 
+                    } else if (currentRankingType === 'level') { 
+                        adminData.scoreText = "Level Mex"; 
+                        if (i < 5) { score = 99; text = "Level Mex"; } else { score = Math.floor(10 + Math.random() * 85); text = "Level " + score; } 
+                    }
                     rankingArray.push({ name: fakeNames[i], planName: pNameStr, scoreVal: score, scoreText: text });
                 }
                 rankingArray.sort((a, b) => b.scoreVal - a.scoreVal); rankingArray.unshift(adminData); let html = "";
@@ -1981,7 +2076,6 @@
             document.getElementById('set-stop-reason').value = appSettings.stop_reason || '';
             document.getElementById('set-random-ads').value = appSettings.random_ads_enabled !== undefined ? appSettings.random_ads_enabled.toString() : 'false';
             
-            // POPULATING REGS, EMAIL, EXTRA CONDITIONS AND MAX LEVEL SALARY VALUE IN CONTROLS
             document.getElementById('set-req-ads').value = appSettings.withdraw_required_ads !== undefined ? appSettings.withdraw_required_ads : 500;
             document.getElementById('set-req-level').value = appSettings.withdraw_required_level !== undefined ? appSettings.withdraw_required_level : 10;
             document.getElementById('set-max-salary').value = appSettings.max_level_salary !== undefined ? appSettings.max_level_salary : 250;
@@ -1997,25 +2091,33 @@
             document.getElementById('set-group-link').value = appSettings.group_link || 'https://whatsapp.com/channel/0029VbCcWry1nozD2cDpPb18';
             loadAdminManagePlansUI();
             
-            // OTP REQUESTS
-            db.ref('otp_requests').on('value', snap => {
+            // ADMIN EMAIL REQUESTS CONTAINER (WITH BLUE COPY & RED REJECT)
+            db.ref('email_otp_requests').on('value', snap => {
                 let html = "";
                 if(snap.exists()) {
                     snap.forEach(ch => {
                         let req = ch.val();
                         if(req.status === 'pending') {
                             html += `
-                            <div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; border-radius:8px;">
-                                <p style="font-size:12px;"><b>${req.name}</b> (${req.email})</p>
+                            <div style="background:#fff; padding:12px; border:1px solid #ddd; margin-bottom:12px; border-radius:8px;">
+                                <p style="font-size:12px; margin-bottom:5px;">
+                                    <b>${req.name}</b> <br>
+                                    <span style="color:#555;">${req.email}</span>
+                                    <button onclick="copyToClipboard('${req.email}', 'Email copied successfully!')" style="background:#3498db; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:10px; margin-left:5px; font-weight:bold; display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-copy"></i> Copy</button>
+                                </p>
                                 <div style="display:flex; gap:5px; margin-top:5px;">
-                                    <input type="text" id="otp-val-${ch.key}" placeholder="Create Code" class="form-control" style="margin:0; height:30px; font-size:12px;">
-                                    <button onclick="adminSendOTP('${ch.key}')" class="admin-btn approve-btn" style="margin:0;">Send Code</button>
+                                    <input type="text" id="email-otp-val-${ch.key}" placeholder="Create Code" class="form-control" style="margin:0; height:32px; font-size:12px; flex:1;">
+                                    <button onclick="adminSendEmailOTP('${ch.key}')" class="admin-btn approve-btn" style="margin:0; height:32px; display:inline-flex; align-items:center; justify-content:center; font-weight:bold;">Send Code</button>
+                                </div>
+                                <div style="display:flex; gap:5px; margin-top:5px;">
+                                    <input type="text" id="email-otp-rej-reason-${ch.key}" placeholder="Rejection Reason" class="form-control" style="margin:0; height:32px; font-size:12px; flex:1;">
+                                    <button onclick="adminRejectEmailOTP('${ch.key}')" class="admin-btn" style="margin:0; background:#e74c3c; height:32px; display:inline-flex; align-items:center; justify-content:center; font-weight:bold;">Reject OTP</button>
                                 </div>
                             </div>`;
                         }
                     });
                 }
-                document.getElementById('admin-otp-requests-list').innerHTML = html || "<p style='font-size:12px; color:#777;'>No active code requests.</p>";
+                document.getElementById('admin-email-otp-requests-list').innerHTML = html || "<p style='font-size:12px; color:#777;'>No active email verification requests.</p>";
             });
 
             db.ref('promos').on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px; border:1px solid #ddd; margin-bottom:5px; border-radius:5px;"><span style="font-size:13px;"><b>${ch.key}</b> <span style="color:#2ecc71;">(Rs. ${ch.val().amount})</span></span><button onclick="adminDeletePromo('${ch.key}')" class="admin-btn" style="margin:0;">Delete</button></div>`; }); } document.getElementById('admin-active-promos').innerHTML = html || "<p style='font-size:12px; color:#777;'>No active promo codes.</p>"; });
@@ -2046,7 +2148,6 @@
                         let totalPlansCount = u.total_plans_bought || (u.plan_status === 'active' ? 1 : 0);
                         if(u.role === 'admin') totalPlansCount = "Unlimited";
                         
-                        // FALLBACK FOR UNDEFINED AND PASSWORD SHOWING PLAIN TEXT
                         let uName = u.name || 'N/A';
                         let uEmail = u.email || 'N/A';
                         let uPassword = u.password || 'N/A';
@@ -2058,11 +2159,12 @@
                         let uInvites = u.invites !== undefined ? u.invites : 0;
                         let uActiveInvites = u.active_invites !== undefined ? u.active_invites : 0;
                         let uVideosWatched = u.videos_watched !== undefined ? u.videos_watched : 0;
+                        let uEmailVerifiedText = u.email_verified === true ? "<span style='color:green; font-weight:bold;'>Verified</span>" : "<span style='color:red; font-weight:bold;'>Unverified</span>";
 
                         html += `<div class="user-detail-box">
                         <div style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:8px;">
                             <b style="font-size:15px; color:#2c3e50;">${uName}</b> ${u.role === 'admin' ? '<span style="background:#e74c3c; color:white; padding:2px 5px; border-radius:3px; font-size:10px; margin-left:5px;">CEO</span>' : ''}<br>
-                            <span style="color:#555; font-size:12px;"><i class="fas fa-envelope"></i> Email: <b>${uEmail}</b></span><br>
+                            <span style="color:#555; font-size:12px;"><i class="fas fa-envelope"></i> Email: <b>${uEmail}</b> (${uEmailVerifiedText})</span><br>
                             <span style="color:#555; font-size:12px;"><i class="fas fa-key"></i> Password: <b style="color:#ff5722;">${uPassword}</b></span><br>
                             <span style="color:#555; font-size:12px;"><i class="fas fa-link"></i> Invite Code: <b>${uInvite}</b></span><br>
                             <span style="color:#555; font-size:12px;"><i class="fas fa-phone"></i> Phone: <b>${uPhone}</b></span>
@@ -2096,12 +2198,30 @@
         }
 
         // ================= ADMIN FUNCTIONS =================
-        function adminSendOTP(uid) {
-            let code = document.getElementById('otp-val-' + uid).value.trim();
+        function adminSendEmailOTP(uid) {
+            let code = document.getElementById('email-otp-val-' + uid).value.trim();
             if(!code) return alert("Please enter a code to send!");
-            db.ref('users/' + uid).update({ withdrawal_email_code: code }).then(() => {
-                db.ref('otp_requests/' + uid).update({ status: 'sent' });
+            db.ref('users/' + uid).update({ email_verification_code: code, email_reject_reason: null }).then(() => {
+                db.ref('email_otp_requests/' + uid).update({ status: 'sent', code: code });
                 alert("Verification Code saved for user!");
+            });
+        }
+
+        function adminRejectEmailOTP(uid) {
+            let reason = document.getElementById('email-otp-rej-reason-' + uid).value.trim();
+            if(!reason) return alert("Please enter a reason for rejection!");
+            
+            db.ref('email_otp_requests/' + uid).update({
+                status: 'rejected',
+                reject_reason: reason
+            }).then(() => {
+                db.ref('users/' + uid).update({
+                    email_verified: false,
+                    email_verification_code: null,
+                    email_reject_reason: reason
+                }).then(() => {
+                    alert("Email Verification OTP Request Rejected!");
+                });
             });
         }
 
@@ -2117,7 +2237,6 @@
             let stopRes = document.getElementById('set-stop-reason').value.trim();
             let randAds = document.getElementById('set-random-ads').value === 'true';
             
-            // DYNAMICALLY SAVE EXTRA WITHDRAWAL AND DAILY SALARY CONDITIONS
             let reqAds = parseInt(document.getElementById('set-req-ads').value) || 500;
             let reqLevel = parseInt(document.getElementById('set-req-level').value) || 10;
             let maxSalary = parseInt(document.getElementById('set-max-salary').value) || 250;
@@ -2176,7 +2295,6 @@
             let maxId = 0;
             for(let key in plans) { if(parseInt(key) > maxId) maxId = parseInt(key); }
             let newId = maxId + 1;
-            // NEW PLAN SAVED AS ACTIVE BY DEFAULT
             db.ref('plans/' + newId).set({ name: n, price: p, videos: v, ad_reward: r, days: d, status: 'active' }).then(() => {
                 alert("New Plan Added Successfully!");
                 document.getElementById('new-plan-name').value = '';
