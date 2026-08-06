@@ -741,7 +741,7 @@
                             <p style="font-size:11px; color:#555; margin-top:5px;">When active, users must watch a dynamic randomized number of ads (between 2 and 9) to earn their standard plan's total daily payout.</p>
                         </div>
 
-                        <!-- NEW: EXTRA WITHDRAWAL CONDITIONS & MAX LEVEL DAILY SALARY EDIT OPTIONS -->
+                        <!-- NEW: EXTRA WITHWAL CONDITIONS & MAX LEVEL DAILY SALARY EDIT OPTIONS -->
                         <div style="background:#f4f6f7; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #bdc3c7;">
                             <label class="auth-label" style="color:#2c3e50;"><i class="fas fa-wallet"></i> Extra Withdrawal Conditions Settings</label>
                             
@@ -1527,6 +1527,7 @@
             });
         }
 
+        // ================= ADMIN FUNCTIONS =================
         function loginUser() {
             let e = document.getElementById('loginEmail').value.toLowerCase().trim(); let p = document.getElementById('loginPass').value;
             if(!e || !p) { showAuthError('login-error', "Fill all fields!"); return; }
@@ -2165,7 +2166,8 @@
                         html += `
                         <tr>
                             <td>
-                                <b>ID:</b> <span style="font-family:monospace; color:#3498db; font-weight:bold;">${displayId}</span><br>
+                                <b>ID:</b> <span style="font-family:monospace; color:#3498db; font-weight:bold;">${displayId}</span>
+                                ${w.withdraw_id ? `<button onclick="copyToClipboard('${w.withdraw_id}', 'Withdraw ID copied!')" style="background:#3498db; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:9px; margin-left:5px; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fas fa-copy"></i> Copy</button>` : ''}<br>
                                 <small>Method: ${w.method} (${w.acc || ''})</small><br>
                                 <span style="font-size:10px; color:#777;">${displayDate} @ ${displayTime}</span>
                             </td>
@@ -2441,7 +2443,27 @@
             pendingRenewalsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let u = ch.val(); html += `<div style="background:#fdf9e3; padding:10px; border:1px solid #f39c12; margin-bottom:5px; font-size:13px;"><b>${u.name}</b> (${u.email})<br>Advance Plan: <b>${plans[u.renew_plan_id]?plans[u.renew_plan_id].name:'None'}</b><br><span style="color:#2ecc71;">Account Name:</span> ${u.renew_payment_account_name || 'N/A'}<br><span style="color:#e74c3c;">Sender Num:</span> ${u.renew_payment_num}<br><span style="color:#e74c3c;">Trx ID (UID):</span> ${u.renew_payment_trx}<br><button onclick="adminApproveRenewal('${ch.key}')" class="admin-btn approve-btn" style="margin-top:10px; width:100%;">Approve Renewal</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="renew-rej-${ch.key}" placeholder="Reason for rejection" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectRenewal('${ch.key}')" class="admin-btn" style="margin:0;">Reject</button></div></div>`; }); } document.getElementById('admin-pending-renewals').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending renewals.</p>"; });
             
             let pendingWithdrawsQuery = db.ref('withdrawals').orderByChild('status').equalTo('Pending');
-            pendingWithdrawsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${w.name}</b> | Rs. ${w.amount}<br><small>ID: ${w.withdraw_id || 'N/A'} | ${w.method}: ${w.acc}</small><br><button onclick="adminApproveWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn approve-btn" style="margin-top:5px; width:100%;">Approve</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="with-rej-${ch.key}" placeholder="Reject Reason" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn" style="margin:0;">Reject (Refund)</button></div></div>`; }); } document.getElementById('admin-pending-withdraws').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending withdrawals.</p>"; });
+            pendingWithdrawsQuery.on('value', snap => { 
+                let html = ""; 
+                if(snap.exists()) { 
+                    snap.forEach(ch => { 
+                        let w = ch.val(); 
+                        html += `
+                        <div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;">
+                            <b>${w.name}</b> | Rs. ${w.amount}<br>
+                            <small>ID: ${w.withdraw_id || 'N/A'} | ${w.method}: ${w.acc} 
+                                ${w.acc ? `<button onclick="copyToClipboard('${w.acc}', 'IBAN / Account Number copied!')" style="background:#3498db; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:9px; margin-left:5px; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fas fa-copy"></i> Copy</button>` : ''}
+                            </small><br>
+                            <button onclick="adminApproveWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn approve-btn" style="margin-top:5px; width:100%;">Approve</button>
+                            <div style="display:flex; gap:5px; margin-top:5px;">
+                                <input type="text" id="with-rej-${ch.key}" placeholder="Reject Reason" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;">
+                                <button onclick="adminRejectWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn" style="margin:0;">Reject (Refund)</button>
+                            </div>
+                        </div>`; 
+                    }); 
+                } 
+                document.getElementById('admin-pending-withdraws').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending withdrawals.</p>"; 
+            });
             
             let pendingComplaintsQuery = db.ref('complaints').orderByChild('status').equalTo('Pending');
             pendingComplaintsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let c = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:12px;"><b>${c.name}</b> (${c.type})<br><div style="background:#f9f9f9; padding:5px; margin:5px 0; border-left:3px solid #3498db;">${c.message}</div><textarea id="comp-reply-${ch.key}" class="form-control" rows="2" placeholder="Write Company Reply here..." style="font-size:12px; padding:8px;"></textarea><button onclick="adminResolveComplaint('${ch.key}')" class="admin-btn approve-btn" style="width:100%;">Reply & Mark Resolved</button></div>`; }); } document.getElementById('admin-pending-complaints').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending complaints.</p>"; });
