@@ -26,7 +26,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-7478074800044955" crossorigin="anonymous"></script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background-color: #f4f7fc; overflow-x: hidden; color: #333; user-select: none; /* Anti-Copy Banking Security */ }
         a { text-decoration: none; color: inherit; }
 
@@ -139,6 +139,69 @@
 
         /* COMING SOON CSS FOR OFF PLANS */
         .coming-soon-badge { color: #e74c3c; font-family: 'Times New Roman', serif; font-size: 24px; font-weight: bold; margin: 20px 0; display: block; }
+
+        /* ================= 3D SALARY BOX ANIMATIONS ================= */
+        @keyframes pulse3DShadow {
+            0% { box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
+            50% { box-shadow: 0 20px 35px rgba(52, 152, 219, 0.7); }
+            100% { box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
+        }
+        .salary-container-3d {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+        .salary-box-3d {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            transform: rotateX(8deg) rotateY(-8deg);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s;
+            transform-style: preserve-3d;
+            animation: pulse3DShadow 3s infinite;
+            text-align: center;
+        }
+        .salary-box-3d:hover {
+            transform: rotateX(0deg) rotateY(0deg) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .salary-box-3d h1 {
+            font-size: 34px;
+            color: #f1c40f;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin: 10px 0 15px 0;
+            font-weight: bold;
+        }
+
+        /* ================= DARK THEME OVERRIDE SYSTEM ================= */
+        body.dark-theme { background-color: #121212; color: #e0e0e0; }
+        body.dark-theme header { background: #1e1e1e; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        body.dark-theme .menu-btn { color: #fff; }
+        body.dark-theme .sidebar { background: #1e1e1e; border-right: 1px solid #333; }
+        body.dark-theme .sidebar-header { background: #252525; border-bottom: 1px solid #333; }
+        body.dark-theme .menu-list li span, body.dark-theme .menu-list li a { color: #ccc; border-bottom: 1px solid #252525; }
+        body.dark-theme .profile-card { background: #1e1e1e; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        body.dark-theme .form-control { background: #2b2b2b; color: #fff; border: 1px solid #444; }
+        body.dark-theme .auth-container { background: #121212; }
+        body.dark-theme .auth-box { background: #121212; color: #fff; }
+        body.dark-theme .auth-input-new { background: #2b2b2b; color: #fff; border: 1px solid #444; }
+        body.dark-theme .auth-separator { color: #ccc; }
+        body.dark-theme .auth-label { color: #bbb; }
+        body.dark-theme .w-stat-box { background: #1e1e1e; border: 1px solid #333; }
+        body.dark-theme .w-stat-box p { color: #aaa; }
+        body.dark-theme .record-table th { background: #2d2d2d; color: #ccc; }
+        body.dark-theme .record-table td { border-bottom: 1px solid #2d2d2d; color: #e0e0e0; }
+        body.dark-theme .page-header-box { background: #2d3748; color: #fff; }
+        body.dark-theme .rank-item { background: #1e1e1e; border-bottom: 1px solid #2d2d2d; }
+        body.dark-theme .rank-name { color: #fff; }
+        body.dark-theme .rank-plan { background: #2d3748; color: #3498db; }
+        body.dark-theme .earning-badge { background: #252525; border: 1px solid #333; }
+        body.dark-theme .eb-item p { color: #aaa; }
+        body.dark-theme .video-card { background: #1e1e1e; border: 1px solid #333; }
+        body.dark-theme .modal-box { background: #1e1e1e; color: #fff; }
+        body.dark-theme .modal-text { color: #ccc; }
+        body.dark-theme #view-loading { background: #121212; color: #fff; }
     </style>
 </head>
 <body>
@@ -358,6 +421,14 @@
                         <h3 id="prof-disp-name" style="color:#333;"></h3>
                     </div>
 
+                    <!-- DARK AND LIGHT THEME SWITCHER CARD -->
+                    <div class="profile-card" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin:0;"><i class="fas fa-palette"></i> Display Theme</h3>
+                        <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: #34495e; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-moon"></i> Dark Mode
+                        </button>
+                    </div>
+
                     <div class="profile-card">
                         <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Account Details</h3>
                         <div id="prof-msg" class="alert-success"></div>
@@ -479,6 +550,10 @@
                 <!-- LEVELS -->
                 <div id="page-levels" class="page">
                     <div class="page-header-box"><h1>Levels</h1><p>Watch videos sequentially to clear milestone levels.</p></div>
+                    
+                    <!-- 3D MAX LEVEL DAILY SALARY CLAIM BOX CONTAINER -->
+                    <div id="mex-salary-container" style="display: none;"></div>
+
                     <div class="profile-card" style="text-align:center;">
                         <h2 style="color:#3498db;">Current Level: <span id="lvl-current">1</span> / Mex</h2>
                         <div class="progress-bg"><div id="lvl-progress" class="progress-fill" style="width:0%;"></div></div>
@@ -570,7 +645,7 @@
                         <h3>Invite History</h3>
                         <div style="overflow-x:auto;">
                             <table class="record-table">
-                                <thead><tr><th>Friend Name</th><th>Plan Status</th></tr></thead>
+                                <thead><tr><th>Friend Details</th><th>Plan & Status</th></tr></thead>
                                 <tbody id="invite-history-list"></tbody>
                             </table>
                         </div>
@@ -627,7 +702,7 @@
                         <h3>Withdrawal History</h3>
                         <div style="overflow-x:auto;">
                             <table class="record-table">
-                                <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Details</th><th>Amount</th><th>Status</th></tr></thead>
                                 <tbody id="w-history-list"></tbody>
                             </table>
                         </div>
@@ -1050,7 +1125,7 @@
             for (let i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
             }
-            // strictly between 2 and 9 (1 se zyada or 10 se kam)
+            // strictly between 2 and 9
             let num = Math.abs(hash) % 8 + 2; 
             return num;
         }
@@ -1198,6 +1273,12 @@
 
         // ================= INITIALIZATION & LOADING =================
         window.onload = () => {
+            // Apply saved dark/light theme setting
+            let savedTheme = localStorage.getItem('titanic_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const inviteParam = urlParams.get('invite');
 
@@ -1271,28 +1352,12 @@
                 }
             }
 
-            // DAILY SALARY SYSTEM CREDITED ON LOGIN DATE CHANGE FOR "MEX" USERS
+            // DAILY LOGIN TRACKER AND DAY SWITCHER
             if(userData.last_login_date !== getTodayStr()) {
                 let updates = { 
                     login_days: (userData.login_days || 0) + 1, 
                     last_login_date: getTodayStr() 
                 };
-
-                let lvlDetails = getLevelDetails(userData.videos_watched || 0, userData.role);
-                if (lvlDetails.level === 'Mex' && userData.role !== 'admin') {
-                    let salaryVal = appSettings.max_level_salary !== undefined ? parseInt(appSettings.max_level_salary) : 250;
-                    updates.balance = (userData.balance || 0) + salaryVal;
-                    updates.total_earned = (userData.total_earned || 0) + salaryVal;
-                    
-                    db.ref(`users/${currentUserUid}/earning_history`).push({ 
-                        date: new Date().toLocaleString(), 
-                        amount: salaryVal, 
-                        source: "Daily Max Level Salary" 
-                    });
-                    
-                    alert(`Congratulations! As a Max Level ("Mex") user, you have been credited Rs. ${salaryVal} as your Daily Salary.`);
-                }
-
                 db.ref('users/' + currentUserUid).update(updates);
             }
 
@@ -1370,6 +1435,30 @@
                 x.type = "text";
             } else {
                 x.type = "password";
+            }
+        }
+
+        // ================= DARK/LIGHT THEME TOGGLE SYSTEM =================
+        function toggleTheme() {
+            let body = document.body;
+            body.classList.toggle('dark-theme');
+            let isDark = body.classList.contains('dark-theme');
+            localStorage.setItem('titanic_theme', isDark ? 'dark' : 'light');
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            let btn = document.getElementById('theme-toggle-btn');
+            if(!btn) return;
+            let isDark = document.body.classList.contains('dark-theme');
+            if(isDark) {
+                btn.innerHTML = `<i class="fas fa-sun"></i> Light Mode`;
+                btn.style.background = "#f1c40f";
+                btn.style.color = "#000";
+            } else {
+                btn.innerHTML = `<i class="fas fa-moon"></i> Dark Mode`;
+                btn.style.background = "#34495e";
+                btn.style.color = "#fff";
             }
         }
 
@@ -1713,6 +1802,9 @@
             let img = document.getElementById('user-pic-img'); let icon = document.getElementById('default-pic-icon'); if(userData.profile_pic) { img.src = userData.profile_pic; img.style.display = 'block'; icon.style.display = 'none'; } else { img.style.display = 'none'; icon.style.display = 'block'; }
             document.getElementById('prof-msg').style.display = 'none'; document.getElementById('pass-err').style.display = 'none';
 
+            // Theme Switcher visual button initializer
+            updateThemeButton();
+
             // EMAIL VERIFICATION UI UPDATES WITH DYNAMIC STATUS HANDLERS
             let vStatus = document.getElementById('email-verify-status');
             let vBox = document.getElementById('email-verify-box');
@@ -1890,6 +1982,30 @@
             if (!userData) return;
             let lvlData = getLevelDetails(userData.videos_watched || 0, userData.role);
 
+            // RENDER 3D SALARY BOX IF LEVEL IS MEX
+            let mexContainer = document.getElementById('mex-salary-container');
+            if (lvlData.level === 'Mex' && userData.role !== 'admin') {
+                let salaryVal = appSettings.max_level_salary !== undefined ? parseInt(appSettings.max_level_salary) : 250;
+                let today = getTodayStr();
+                let claimedToday = userData.last_salary_claim_date === today;
+
+                mexContainer.innerHTML = `
+                    <div class="salary-container-3d">
+                        <div class="salary-box-3d">
+                            <h3 style="font-size: 16px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-hand-holding-usd"></i> Max Level Daily Salary</h3>
+                            <h1>Rs. ${salaryVal}</h1>
+                            ${claimedToday ? 
+                                `<button disabled style="background: #7f8c8d; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: not-allowed; width: 100%; font-size: 15px;">Already Claimed Today</button>` : 
+                                `<button onclick="claimDailySalary()" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: 0.2s;" onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">Claim Salary</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                mexContainer.style.display = 'block';
+            } else {
+                mexContainer.style.display = 'none';
+            }
+
             document.getElementById('lvl-current').innerText = lvlData.level; 
             document.getElementById('lvl-progress').style.width = lvlData.percent + "%"; 
             document.getElementById('lvl-vids').innerText = lvlData.progress;
@@ -1915,6 +2031,31 @@
                 histHtml = "<li>No levels claimed yet.</li>"; 
             }
             document.getElementById('level-history-list').innerHTML = histHtml;
+        }
+
+        // ================= MANUAL DAILY SALARY CLAIM FUNCTION =================
+        function claimDailySalary() {
+            if (isPreviewMode) return alert("Earning salary is disabled in Preview Mode!");
+            if(isEarningStopped()) return;
+
+            if (userData.plan_status !== 'active') return alert("You need an active plan to claim your Daily Salary!");
+            
+            let salaryVal = appSettings.max_level_salary !== undefined ? parseInt(appSettings.max_level_salary) : 250;
+            let today = getTodayStr();
+
+            if (userData.last_salary_claim_date === today) {
+                return alert("You have already claimed your Daily Salary for today!");
+            }
+
+            db.ref('users/' + currentUserUid).update({
+                balance: (userData.balance || 0) + salaryVal,
+                last_salary_claim_date: today,
+                total_earned: (userData.total_earned || 0) + salaryVal
+            }).then(() => {
+                logEarning(salaryVal, "Daily Max Level Salary");
+                alert(`Rs. ${salaryVal} Daily Salary claimed successfully!`);
+                loadLevelsUI();
+            });
         }
 
         function claimLevel(lvl) { 
@@ -1980,6 +2121,16 @@
             } 
         }
 
+        // ================= 12-CHARACTER MIXED ALPHANUMERIC WITHDRAW ID GENERATOR =================
+        function generateWithdrawId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 12; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
         function loadWalletUI() { 
             if (!userData) return;
             document.getElementById('w-bal').innerText = userData.balance||0; document.getElementById('w-with').innerText = userData.total_withdraw||0; document.getElementById('w-tot').innerText = ((userData.balance||0) + (userData.total_withdraw||0)); 
@@ -1997,7 +2148,37 @@
                 }
             }
 
-            db.ref('withdrawals').orderByChild('uid').equalTo(currentUserUid).on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); let color = w.status === 'Approved' ? '#2ecc71' : (w.status === 'Rejected' ? '#e74c3c' : '#f39c12'); let rejText = (w.status === 'Rejected' && w.reject_reason) ? `<br><small style="color:#e74c3c;">Reason: ${w.reject_reason}</small>` : ''; html += `<tr><td>${w.date.split(',')[0]}</td><td style="color:red;">-${w.amount}</td><td><span style="background:${color}; color:#fff; padding:3px 6px; border-radius:5px; font-size:10px;">${w.status}</span>${rejText}</td></tr>`; }); } document.getElementById('w-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No history</td></tr>"; });
+            // REPAIRED & EXTENDED DETAILED WITHDRAWAL HISTORY
+            db.ref('withdrawals').orderByChild('uid').equalTo(currentUserUid).on('value', snap => { 
+                let html = ""; 
+                if(snap.exists()) { 
+                    let records = [];
+                    snap.forEach(ch => { records.push(ch.val()); }); 
+                    records.reverse().forEach(w => { 
+                        let color = w.status === 'Approved' ? '#2ecc71' : (w.status === 'Rejected' ? '#e74c3c' : '#f39c12'); 
+                        let rejText = (w.status === 'Rejected' && w.reject_reason) ? `<br><small style="color:#e74c3c;">Reject Reason: ${w.reject_reason}</small>` : ''; 
+                        
+                        let displayId = w.withdraw_id || 'N/A';
+                        let displayDate = w.date || w.dateStr || 'N/A';
+                        let displayTime = w.time || '';
+                        
+                        html += `
+                        <tr>
+                            <td>
+                                <b>ID:</b> <span style="font-family:monospace; color:#3498db; font-weight:bold;">${displayId}</span><br>
+                                <small>Method: ${w.method} (${w.acc || ''})</small><br>
+                                <span style="font-size:10px; color:#777;">${displayDate} @ ${displayTime}</span>
+                            </td>
+                            <td style="color:#e74c3c; font-weight:bold; vertical-align:middle;">-Rs. ${w.amount}</td>
+                            <td style="vertical-align:middle;">
+                                <span style="background:${color}; color:#fff; padding:3px 6px; border-radius:5px; font-size:10px; font-weight:bold;">${w.status}</span>
+                                ${rejText}
+                            </td>
+                        </tr>`; 
+                    }); 
+                } 
+                document.getElementById('w-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No withdrawal history.</td></tr>"; 
+            });
         }
         
         function requestWithdraw() {
@@ -2056,11 +2237,28 @@
             }
             
             let todayStr = getTodayStr();
+            let withdrawId = generateWithdrawId();
+            let currentDateObj = new Date();
+            let dateStr = currentDateObj.toLocaleDateString();
+            let timeStr = currentDateObj.toLocaleTimeString();
+
             db.ref('users/'+currentUserUid).update({ 
                 balance: userData.balance - amt, 
                 total_withdraw: (userData.total_withdraw||0) + amt
             }).then(()=>{ 
-                db.ref('withdrawals').push({ uid: currentUserUid, name: userData.name, dateStr: todayStr, date: new Date().toLocaleString(), amount: amt, status: 'Pending', method: method, acc: acc, reject_reason: '' }); 
+                db.ref('withdrawals').push({ 
+                    uid: currentUserUid, 
+                    name: userData.name, 
+                    withdraw_id: withdrawId,
+                    dateStr: todayStr, 
+                    date: dateStr,
+                    time: timeStr,
+                    amount: amt, 
+                    status: 'Pending', 
+                    method: method, 
+                    acc: acc, 
+                    reject_reason: '' 
+                }); 
                 alert("Withdrawal request sent successfully!"); 
                 location.reload();
             });
@@ -2074,7 +2272,39 @@
             if(!baseLink.endsWith('/')) baseLink += "/";
             document.getElementById('myInviteLink').value = baseLink + "?invite=" + code; 
             document.getElementById('myInviteCode').value = code;
-            db.ref('users').orderByChild('referred_by').equalTo(code).once('value', snap => { let historyHtml = ""; if(snap.exists()) { snap.forEach(ch => { let friend = ch.val(); let statusBadge = friend.plan_status === 'active' ? '<span style="color:#2ecc71; font-weight:bold;">Active</span>' : '<span style="color:#f39c12; font-weight:bold;">Pending/None</span>'; historyHtml += `<tr><td>${friend.name}</td><td>${statusBadge}</td></tr>`; }); } document.getElementById('invite-history-list').innerHTML = historyHtml || "<tr><td colspan='2' style='text-align:center;'>No friends invited yet.</td></tr>"; });
+
+            // INVITE HISTORY UPGRADE: Friend details, Purchased plan, Date, Time & Plan status
+            db.ref('users').orderByChild('referred_by').equalTo(code).once('value', snap => { 
+                let historyHtml = ""; 
+                if(snap.exists()) { 
+                    snap.forEach(ch => { 
+                        let friend = ch.val(); 
+                        let planName = (friend.plan_id >= 0 && plans[friend.plan_id]) ? plans[friend.plan_id].name : 'None';
+                        let statusBadge = friend.plan_status === 'active' ? '<span style="color:#2ecc71; font-weight:bold;">Active</span>' : (friend.plan_status === 'pending' ? '<span style="color:#f39c12; font-weight:bold;">Pending</span>' : '<span style="color:#999; font-weight:bold;">None</span>'); 
+                        
+                        let regDate = 'N/A';
+                        let regTime = '';
+                        if(friend.account_created_at) {
+                            let dObj = new Date(friend.account_created_at);
+                            regDate = dObj.toLocaleDateString();
+                            regTime = dObj.toLocaleTimeString();
+                        }
+
+                        historyHtml += `
+                        <tr>
+                            <td>
+                                <b>${friend.name}</b><br>
+                                <small style="color:#777;">Reg: ${regDate} @ ${regTime}</small>
+                            </td>
+                            <td>
+                                <b>Plan: ${planName}</b><br>
+                                Status: ${statusBadge}
+                            </td>
+                        </tr>`; 
+                    }); 
+                } 
+                document.getElementById('invite-history-list').innerHTML = historyHtml || "<tr><td colspan='2' style='text-align:center;'>No friends invited yet.</td></tr>"; 
+            });
         }
         function copyInviteCode() { let c = document.getElementById("myInviteCode"); c.select(); document.execCommand("copy"); alert("Invite Code Copied!"); } function copyInviteLink() { let l = document.getElementById("myInviteLink"); l.select(); document.execCommand("copy"); alert("Invite Link Copied!"); }
 
@@ -2160,7 +2390,7 @@
             document.getElementById('set-fake-users').value = appSettings.base_fake_users !== undefined ? appSettings.base_fake_users : 250080;
             document.getElementById('set-support-email').value = appSettings.support_email || 'titanicearning1@gmail.com';
             
-            // NEW ADMIN OPTION SETTING INITALIZER
+            // NEW ADMIN OPTION SETTING INITIALIZER
             document.getElementById('set-preview-limit').value = appSettings.preview_limit !== undefined ? appSettings.preview_limit : 5;
 
             document.getElementById('set-notif').value = appSettings.notification_text || '';
@@ -2211,7 +2441,7 @@
             pendingRenewalsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let u = ch.val(); html += `<div style="background:#fdf9e3; padding:10px; border:1px solid #f39c12; margin-bottom:5px; font-size:13px;"><b>${u.name}</b> (${u.email})<br>Advance Plan: <b>${plans[u.renew_plan_id]?plans[u.renew_plan_id].name:'None'}</b><br><span style="color:#2ecc71;">Account Name:</span> ${u.renew_payment_account_name || 'N/A'}<br><span style="color:#e74c3c;">Sender Num:</span> ${u.renew_payment_num}<br><span style="color:#e74c3c;">Trx ID (UID):</span> ${u.renew_payment_trx}<br><button onclick="adminApproveRenewal('${ch.key}')" class="admin-btn approve-btn" style="margin-top:10px; width:100%;">Approve Renewal</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="renew-rej-${ch.key}" placeholder="Reason for rejection" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectRenewal('${ch.key}')" class="admin-btn" style="margin:0;">Reject</button></div></div>`; }); } document.getElementById('admin-pending-renewals').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending renewals.</p>"; });
             
             let pendingWithdrawsQuery = db.ref('withdrawals').orderByChild('status').equalTo('Pending');
-            pendingWithdrawsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${w.name}</b> | Rs. ${w.amount}<br><small>${w.method}: ${w.acc}</small><br><button onclick="adminApproveWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn approve-btn" style="margin-top:5px; width:100%;">Approve</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="with-rej-${ch.key}" placeholder="Reject Reason" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn" style="margin:0;">Reject (Refund)</button></div></div>`; }); } document.getElementById('admin-pending-withdraws').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending withdrawals.</p>"; });
+            pendingWithdrawsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${w.name}</b> | Rs. ${w.amount}<br><small>ID: ${w.withdraw_id || 'N/A'} | ${w.method}: ${w.acc}</small><br><button onclick="adminApproveWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn approve-btn" style="margin-top:5px; width:100%;">Approve</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="with-rej-${ch.key}" placeholder="Reject Reason" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn" style="margin:0;">Reject (Refund)</button></div></div>`; }); } document.getElementById('admin-pending-withdraws').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending withdrawals.</p>"; });
             
             let pendingComplaintsQuery = db.ref('complaints').orderByChild('status').equalTo('Pending');
             pendingComplaintsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let c = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:12px;"><b>${c.name}</b> (${c.type})<br><div style="background:#f9f9f9; padding:5px; margin:5px 0; border-left:3px solid #3498db;">${c.message}</div><textarea id="comp-reply-${ch.key}" class="form-control" rows="2" placeholder="Write Company Reply here..." style="font-size:12px; padding:8px;"></textarea><button onclick="adminResolveComplaint('${ch.key}')" class="admin-btn approve-btn" style="width:100%;">Reply & Mark Resolved</button></div>`; }); } document.getElementById('admin-pending-complaints').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending complaints.</p>"; });
