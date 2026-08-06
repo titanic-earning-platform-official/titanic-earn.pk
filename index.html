@@ -699,6 +699,13 @@
                             <input type="email" id="set-support-email" class="form-control" placeholder="titanicearning1@gmail.com" style="background:#fff; border-color:#2ecc71;">
                             <p style="font-size:11px; color:#555; margin-top:5px;">Set the primary company email address displayed on the Support view.</p>
                         </div>
+
+                        <!-- NEW: EDIT PREVIEW MODE MAXIMUM LIMIT -->
+                        <div style="background:#fdedec; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #fadbd8;">
+                            <label class="auth-label" style="color:#78281f;"><i class="fas fa-eye-slash"></i> Titanic Preview Mode Limit</label>
+                            <input type="number" id="set-preview-limit" class="form-control" placeholder="5" style="background:#fff; border-color:#fadbd8;">
+                            <p style="font-size:11px; color:#555; margin-top:5px;">Define how many times a user is permitted to preview the platform before being forced to login/register.</p>
+                        </div>
                         
                         <label class="auth-label">Popup Notification Text (Leave empty to disable)</label>
                         <textarea id="set-notif" class="form-control" rows="3" placeholder="Enter important news or updates..."></textarea>
@@ -1011,12 +1018,14 @@
             withdraw_required_level: 10,    // DYNAMIC WITHDRAW REQUIREMENT (LEVEL)
             max_level_salary: 250,           // DYNAMIC "MEX" DAILY SALARY VALUE
             min_withdraw: 1200,             // DYNAMIC MINIMUM WITHDRAW
-            max_withdraw: 50000              // DYNAMIC MAXIMUM WITHDRAW
+            max_withdraw: 50000,             // DYNAMIC MAXIMUM WITHDRAW
+            preview_limit: 5                 // DYNAMIC PREVIEW LIMIT (DEFAULT 5)
         };
 
         db.ref('settings').on('value', (snap) => {
             if(snap.exists()) {
                 appSettings = snap.val();
+                if(appSettings.preview_limit === undefined) appSettings.preview_limit = 5;
                 if(document.getElementById('payment-admin-name')) document.getElementById('payment-admin-name').innerText = appSettings.admin_name || "M ASLAM";
                 if(document.getElementById('payment-admin-iban')) document.getElementById('payment-admin-iban').innerText = appSettings.admin_iban || "PK36TMFB0000000050698679";
                 if(document.getElementById('renew-admin-name')) document.getElementById('renew-admin-name').innerText = appSettings.admin_name || "M ASLAM";
@@ -1096,6 +1105,19 @@
 
         // ================= PREVIEW MODE ACTIVE MANAGEMENT (5 MINUTES LIMIT) =================
         function startPreviewMode() {
+            // Check device-level preview usage counter
+            let previewCount = parseInt(localStorage.getItem('titanic_preview_count') || '0');
+            let allowedLimit = appSettings.preview_limit !== undefined ? parseInt(appSettings.preview_limit) : 5;
+            
+            if (previewCount >= allowedLimit) {
+                alert(`You have reached the maximum preview limit of ${allowedLimit} times! Please register or login to continue.`);
+                return;
+            }
+            
+            // Increment and save preview usage
+            previewCount++;
+            localStorage.setItem('titanic_preview_count', previewCount.toString());
+
             isPreviewMode = true;
             userData = {
                 name: "Guest Preview Account",
@@ -1142,7 +1164,7 @@
             document.getElementById('view-main').style.display = 'block';
             
             goTo('page-dashboard');
-            alert("Preview Mode Activated! You can explore the user interface for exactly 5 minutes. Ad running, task earnings, claims, and wallet operations are locked.");
+            alert(`Preview Mode Activated! (Remaining uses on this device: ${allowedLimit - previewCount}). You can explore the user interface for exactly 5 minutes. Ad running, task earnings, claims, and wallet operations are locked.`);
         }
 
         function endPreviewMode() {
@@ -1334,6 +1356,7 @@
         }
 
         function updateSidebarUI() { 
+            if (!userData) return;
             document.getElementById('sb-name').innerText = userData.name; 
             document.getElementById('sb-plan').innerText = userData.plan_status === 'active' && plans[userData.plan_id] ? 'Plan: ' + plans[userData.plan_id].name : 'Pending/No Plan'; 
             
@@ -1446,6 +1469,7 @@
 
         // ================= PLANS & PAYMENT =================
         function loadPlansUI() {
+            if (!userData) return;
             let rejMsg = document.getElementById('plan-reject-msg');
             if(userData && userData.plan_reject_reason) { rejMsg.innerHTML = "<b>Plan Request Rejected!</b><br>Reason: " + userData.plan_reject_reason; rejMsg.style.display = 'block'; } else { rejMsg.style.display = 'none'; }
             
@@ -1503,6 +1527,7 @@
 
         // ================= RENEW / UPGRADE PLAN =================
         function loadRenewUI() {
+            if (!userData) return;
             let rejMsg = document.getElementById('renew-reject-msg');
             let statCard = document.getElementById('renew-status-card');
             let formCard = document.getElementById('renew-form-card');
@@ -1555,6 +1580,7 @@
         }
 
         function loadDashboardUI() {
+            if (!userData) return;
             showNotificationIfNeeded();
             
             let customNotif = document.getElementById('custom-admin-notif-box');
@@ -1677,6 +1703,7 @@
 
         // ================= MY PROFILE =================
         function loadMyProfileUI() {
+            if (!userData) return;
             document.getElementById('prof-disp-name').innerText = userData.name; document.getElementById('prof-name').value = userData.name; document.getElementById('prof-email').value = userData.email; document.getElementById('prof-invite').value = userData.invite_code; 
             
             let phoneInput = document.getElementById('prof-phone'); let phoneBtn = document.getElementById('btn-save-phone'); let phoneHint = document.getElementById('phone-hint'); phoneInput.value = userData.phone || '';
@@ -1821,9 +1848,15 @@
         }
 
         // ================= PROMOS & SUPPORT =================
-        function loadPromoAvailableUI() { db.ref('promos').once('value', snap => { let html = ""; let count = 0; if(snap.exists()) { snap.forEach(ch => { let code = ch.key; let amt = ch.val().amount; count++; let isClaimed = (userData.promo_history && Object.values(userData.promo_history).includes(code)); let btnOrStatus = isClaimed ? `<span style="color:#2ecc71; font-weight:bold; font-size:12px;"><i class="fas fa-check-circle"></i> Claimed</span>` : `<button onclick="copyPromoText('${code}')" style="background:#f39c12; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;"><i class="fas fa-copy"></i> Copy Code</button>`; html += `<li style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:6px; border:1px dashed #3498db;"><div><b style="color:#ff5722; font-size:16px; letter-spacing:1px;">${code}</b><br><small style="color:#555;">Reward: <b>Rs. ${amt}</b></small></div><div>${btnOrStatus}</div></li>`; }); } document.getElementById('active-promo-list').innerHTML = count > 0 ? html : "<li style='text-align:center; color:#777;'>No promo codes currently available.</li>"; }); }
+        function loadPromoAvailableUI() { 
+            if (!userData) return;
+            db.ref('promos').once('value', snap => { let html = ""; let count = 0; if(snap.exists()) { snap.forEach(ch => { let code = ch.key; let amt = ch.val().amount; count++; let isClaimed = (userData.promo_history && Object.values(userData.promo_history).includes(code)); let btnOrStatus = isClaimed ? `<span style="color:#2ecc71; font-weight:bold; font-size:12px;"><i class="fas fa-check-circle"></i> Claimed</span>` : `<button onclick="copyPromoText('${code}')" style="background:#f39c12; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;"><i class="fas fa-copy"></i> Copy Code</button>`; html += `<li style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:6px; border:1px dashed #3498db;"><div><b style="color:#ff5722; font-size:16px; letter-spacing:1px;">${code}</b><br><small style="color:#555;">Reward: <b>Rs. ${amt}</b></small></div><div>${btnOrStatus}</div></li>`; }); } document.getElementById('active-promo-list').innerHTML = count > 0 ? html : "<li style='text-align:center; color:#777;'>No promo codes currently available.</li>"; }); 
+        }
         function copyPromoText(code) { let t = document.createElement("input"); t.value = code; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("Promo Code Copied!"); }
-        function loadPromoUI() { let html = ""; if(userData.promo_history) { Object.values(userData.promo_history).forEach(code => { html += `<li><i class="fas fa-check" style="color:#2ecc71;"></i> ${code} - Claimed</li>`; }); } document.getElementById('promo-history-list').innerHTML = html || "<li>No codes used yet.</li>"; document.getElementById('promo-input').value = ""; }
+        function loadPromoUI() { 
+            if (!userData) return;
+            let html = ""; if(userData.promo_history) { Object.values(userData.promo_history).forEach(code => { html += `<li><i class="fas fa-check" style="color:#2ecc71;"></i> ${code} - Claimed</li>`; }); } document.getElementById('promo-history-list').innerHTML = html || "<li>No codes used yet.</li>"; document.getElementById('promo-input').value = ""; 
+        }
         function applyPromo() { 
             if (isPreviewMode) return alert("Promo codes cannot be applied in Preview Mode!");
             let code = document.getElementById('promo-input').value.toUpperCase().trim(); 
@@ -1845,6 +1878,7 @@
         }
         
         function loadSupportUI() { 
+            if (!userData) return;
             if(document.getElementById('support-email-text')) {
                 document.getElementById('support-email-text').innerText = appSettings.support_email || "titanicearning1@gmail.com";
             }
@@ -1853,6 +1887,7 @@
 
         // ================= LEVELS & REWARDS =================
         function loadLevelsUI() {
+            if (!userData) return;
             let lvlData = getLevelDetails(userData.videos_watched || 0, userData.role);
 
             document.getElementById('lvl-current').innerText = lvlData.level; 
@@ -1895,6 +1930,7 @@
 
         function formatTime(ms) { let d = Math.floor(ms / (1000 * 60 * 60 * 24)); let h = Math.floor((ms / (1000 * 60 * 60)) % 24); let m = Math.floor((ms / 1000 / 60) % 60); let s = Math.floor((ms / 1000) % 60); if(d > 0) return `${d}d ${h}h ${m}m ${s}s`; return `${h}h ${m}m ${s}s`; }
         function loadRewardsUI() { 
+            if (!userData) return;
             document.getElementById('rew-daily-claims').innerText = userData.reward_claims_login || 0; 
             document.getElementById('rew-weekly-claims').innerText = userData.reward_claims_weekly || 0; 
             document.getElementById('rew-monthly-claims').innerText = userData.reward_claims_monthly || 0; 
@@ -1929,7 +1965,10 @@
         function claimYearlyReward() { claimReward('yearly', 250, 31536000000, 10, 'reward_claims_yearly', 'last_claim_yearly', 'Yearly Reward'); }
 
         // ================= WALLET & WITHDRAW =================
-        function loadEarningHistoryUI() { let html = ""; if(userData.earning_history) { let arr = Object.values(userData.earning_history); arr.reverse().forEach(e => { html += `<tr><td style="font-size:11px; color:#777;">${e.date.split(',')[0]}</td><td><b>${e.source}</b></td><td style="color:#2ecc71; font-weight:bold;">+Rs. ${e.amount}</td></tr>`; }); } document.getElementById('earning-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No earnings yet.</td></tr>"; }
+        function loadEarningHistoryUI() { 
+            if (!userData) return;
+            let html = ""; if(userData.earning_history) { let arr = Object.values(userData.earning_history); arr.reverse().forEach(e => { html += `<tr><td style="font-size:11px; color:#777;">${e.date.split(',')[0]}</td><td><b>${e.source}</b></td><td style="color:#2ecc71; font-weight:bold;">+Rs. ${e.amount}</td></tr>`; }); } document.getElementById('earning-history-list').innerHTML = html || "<tr><td colspan='3' style='text-align:center;'>No earnings yet.</td></tr>"; 
+        }
         
         function updateWithdrawPlaceholder() { 
             let method = document.getElementById('w-method').value; 
@@ -1942,6 +1981,7 @@
         }
 
         function loadWalletUI() { 
+            if (!userData) return;
             document.getElementById('w-bal').innerText = userData.balance||0; document.getElementById('w-with').innerText = userData.total_withdraw||0; document.getElementById('w-tot').innerText = ((userData.balance||0) + (userData.total_withdraw||0)); 
             
             // HIDE/SHOW WITHDRAW LIMITS DYNAMICALLY
@@ -2028,6 +2068,7 @@
 
         // ================= INVITES & RANKING =================
         function loadInviteUI() { 
+            if (!userData) return;
             let code = userData.invite_code; 
             let baseLink = appSettings.base_invite_link || "https://www.titanicearning.apk.com/";
             if(!baseLink.endsWith('/')) baseLink += "/";
@@ -2099,6 +2140,13 @@
 
         // ================= COMPANY PANEL (ADMIN) =================
         function loadAdminUI() {
+            // Detach duplicate listeners
+            db.ref('email_otp_requests').off();
+            db.ref('promos').off();
+            db.ref('users').off();
+            db.ref('withdrawals').off();
+            db.ref('complaints').off();
+
             document.getElementById('set-stop-earnings').value = appSettings.stop_earnings !== undefined ? appSettings.stop_earnings.toString() : 'false';
             document.getElementById('set-stop-reason').value = appSettings.stop_reason || '';
             document.getElementById('set-random-ads').value = appSettings.random_ads_enabled !== undefined ? appSettings.random_ads_enabled.toString() : 'false';
@@ -2111,6 +2159,9 @@
 
             document.getElementById('set-fake-users').value = appSettings.base_fake_users !== undefined ? appSettings.base_fake_users : 250080;
             document.getElementById('set-support-email').value = appSettings.support_email || 'titanicearning1@gmail.com';
+            
+            // NEW ADMIN OPTION SETTING INITALIZER
+            document.getElementById('set-preview-limit').value = appSettings.preview_limit !== undefined ? appSettings.preview_limit : 5;
 
             document.getElementById('set-notif').value = appSettings.notification_text || '';
             document.getElementById('set-bank-name').value = appSettings.admin_name || 'M ASLAM';
@@ -2121,7 +2172,8 @@
             loadAdminManagePlansUI();
             
             // ADMIN EMAIL REQUESTS CONTAINER (WITH BLUE COPY & RED REJECT)
-            db.ref('email_otp_requests').on('value', snap => {
+            let emailRequestsRef = db.ref('email_otp_requests');
+            emailRequestsRef.on('value', snap => {
                 let html = "";
                 if(snap.exists()) {
                     snap.forEach(ch => {
@@ -2149,11 +2201,21 @@
                 document.getElementById('admin-email-otp-requests-list').innerHTML = html || "<p style='font-size:12px; color:#777;'>No active email verification requests.</p>";
             });
 
-            db.ref('promos').on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px; border:1px solid #ddd; margin-bottom:5px; border-radius:5px;"><span style="font-size:13px;"><b>${ch.key}</b> <span style="color:#2ecc71;">(Rs. ${ch.val().amount})</span></span><button onclick="adminDeletePromo('${ch.key}')" class="admin-btn" style="margin:0;">Delete</button></div>`; }); } document.getElementById('admin-active-promos').innerHTML = html || "<p style='font-size:12px; color:#777;'>No active promo codes.</p>"; });
-            db.ref('users').orderByChild('plan_status').equalTo('pending').on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let u = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${u.name}</b> (${u.email})<br>Plan: <b>${plans[u.plan_id]?plans[u.plan_id].name:'None'}</b><br><span style="color:#2ecc71;">Account Name:</span> ${u.payment_account_name || 'N/A'}<br><span style="color:#e74c3c;">Sender Num:</span> ${u.payment_num}<br><span style="color:#e74c3c;">Trx ID (UID):</span> ${u.payment_trx}<br><button onclick="adminApprovePlan('${ch.key}')" class="admin-btn approve-btn" style="margin-top:10px; width:100%;">Approve Plan</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="plan-rej-${ch.key}" placeholder="Reason for rejection" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectPlan('${ch.key}')" class="admin-btn" style="margin:0;">Reject</button></div></div>`; }); } document.getElementById('admin-pending-plans').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending new plans.</p>"; });
-            db.ref('users').orderByChild('renew_plan_status').equalTo('pending').on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let u = ch.val(); html += `<div style="background:#fdf9e3; padding:10px; border:1px solid #f39c12; margin-bottom:5px; font-size:13px;"><b>${u.name}</b> (${u.email})<br>Advance Plan: <b>${plans[u.renew_plan_id]?plans[u.renew_plan_id].name:'None'}</b><br><span style="color:#2ecc71;">Account Name:</span> ${u.renew_payment_account_name || 'N/A'}<br><span style="color:#e74c3c;">Sender Num:</span> ${u.renew_payment_num}<br><span style="color:#e74c3c;">Trx ID (UID):</span> ${u.renew_payment_trx}<br><button onclick="adminApproveRenewal('${ch.key}')" class="admin-btn approve-btn" style="margin-top:10px; width:100%;">Approve Renewal</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="renew-rej-${ch.key}" placeholder="Reason for rejection" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectRenewal('${ch.key}')" class="admin-btn" style="margin:0;">Reject</button></div></div>`; }); } document.getElementById('admin-pending-renewals').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending renewals.</p>"; });
-            db.ref('withdrawals').orderByChild('status').equalTo('Pending').on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${w.name}</b> | Rs. ${w.amount}<br><small>${w.method}: ${w.acc}</small><br><button onclick="adminApproveWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn approve-btn" style="margin-top:5px; width:100%;">Approve</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="with-rej-${ch.key}" placeholder="Reject Reason" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn" style="margin:0;">Reject (Refund)</button></div></div>`; }); } document.getElementById('admin-pending-withdraws').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending withdrawals.</p>"; });
-            db.ref('complaints').orderByChild('status').equalTo('Pending').on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let c = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:12px;"><b>${c.name}</b> (${c.type})<br><div style="background:#f9f9f9; padding:5px; margin:5px 0; border-left:3px solid #3498db;">${c.message}</div><textarea id="comp-reply-${ch.key}" class="form-control" rows="2" placeholder="Write Company Reply here..." style="font-size:12px; padding:8px;"></textarea><button onclick="adminResolveComplaint('${ch.key}')" class="admin-btn approve-btn" style="width:100%;">Reply & Mark Resolved</button></div>`; }); } document.getElementById('admin-pending-complaints').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending complaints.</p>"; });
+            let adminPromosRef = db.ref('promos');
+            adminPromosRef.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px; border:1px solid #ddd; margin-bottom:5px; border-radius:5px;"><span style="font-size:13px;"><b>${ch.key}</b> <span style="color:#2ecc71;">(Rs. ${ch.val().amount})</span></span><button onclick="adminDeletePromo('${ch.key}')" class="admin-btn" style="margin:0;">Delete</button></div>`; }); } document.getElementById('admin-active-promos').innerHTML = html || "<p style='font-size:12px; color:#777;'>No active promo codes.</p>"; });
+            
+            let pendingPlansQuery = db.ref('users').orderByChild('plan_status').equalTo('pending');
+            pendingPlansQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let u = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${u.name}</b> (${u.email})<br>Plan: <b>${plans[u.plan_id]?plans[u.plan_id].name:'None'}</b><br><span style="color:#2ecc71;">Account Name:</span> ${u.payment_account_name || 'N/A'}<br><span style="color:#e74c3c;">Sender Num:</span> ${u.payment_num}<br><span style="color:#e74c3c;">Trx ID (UID):</span> ${u.payment_trx}<br><button onclick="adminApprovePlan('${ch.key}')" class="admin-btn approve-btn" style="margin-top:10px; width:100%;">Approve Plan</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="plan-rej-${ch.key}" placeholder="Reason for rejection" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectPlan('${ch.key}')" class="admin-btn" style="margin:0;">Reject</button></div></div>`; }); } document.getElementById('admin-pending-plans').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending new plans.</p>"; });
+            
+            let pendingRenewalsQuery = db.ref('users').orderByChild('renew_plan_status').equalTo('pending');
+            pendingRenewalsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let u = ch.val(); html += `<div style="background:#fdf9e3; padding:10px; border:1px solid #f39c12; margin-bottom:5px; font-size:13px;"><b>${u.name}</b> (${u.email})<br>Advance Plan: <b>${plans[u.renew_plan_id]?plans[u.renew_plan_id].name:'None'}</b><br><span style="color:#2ecc71;">Account Name:</span> ${u.renew_payment_account_name || 'N/A'}<br><span style="color:#e74c3c;">Sender Num:</span> ${u.renew_payment_num}<br><span style="color:#e74c3c;">Trx ID (UID):</span> ${u.renew_payment_trx}<br><button onclick="adminApproveRenewal('${ch.key}')" class="admin-btn approve-btn" style="margin-top:10px; width:100%;">Approve Renewal</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="renew-rej-${ch.key}" placeholder="Reason for rejection" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectRenewal('${ch.key}')" class="admin-btn" style="margin:0;">Reject</button></div></div>`; }); } document.getElementById('admin-pending-renewals').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending renewals.</p>"; });
+            
+            let pendingWithdrawsQuery = db.ref('withdrawals').orderByChild('status').equalTo('Pending');
+            pendingWithdrawsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let w = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:13px;"><b>${w.name}</b> | Rs. ${w.amount}<br><small>${w.method}: ${w.acc}</small><br><button onclick="adminApproveWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn approve-btn" style="margin-top:5px; width:100%;">Approve</button><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" id="with-rej-${ch.key}" placeholder="Reject Reason" style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px; font-size:12px;"><button onclick="adminRejectWithdraw('${ch.key}', '${w.uid}', ${w.amount})" class="admin-btn" style="margin:0;">Reject (Refund)</button></div></div>`; }); } document.getElementById('admin-pending-withdraws').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending withdrawals.</p>"; });
+            
+            let pendingComplaintsQuery = db.ref('complaints').orderByChild('status').equalTo('Pending');
+            pendingComplaintsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let c = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:12px;"><b>${c.name}</b> (${c.type})<br><div style="background:#f9f9f9; padding:5px; margin:5px 0; border-left:3px solid #3498db;">${c.message}</div><textarea id="comp-reply-${ch.key}" class="form-control" rows="2" placeholder="Write Company Reply here..." style="font-size:12px; padding:8px;"></textarea><button onclick="adminResolveComplaint('${ch.key}')" class="admin-btn approve-btn" style="width:100%;">Reply & Mark Resolved</button></div>`; }); } document.getElementById('admin-pending-complaints').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending complaints.</p>"; });
+            
             db.ref('users').once('value', snap => { 
                 let html = ""; 
                 if(snap.exists()) { 
@@ -2274,6 +2336,9 @@
 
             let baseFakeUsers = parseInt(document.getElementById('set-fake-users').value) || 250080;
             let supportEmail = document.getElementById('set-support-email').value.trim() || "titanicearning1@gmail.com";
+            
+            // ADMIN INPUT STORAGE EXTENSION
+            let previewLimit = parseInt(document.getElementById('set-preview-limit').value) || 5;
 
             let notif = document.getElementById('set-notif').value;
             let bName = document.getElementById('set-bank-name').value.trim();
@@ -2297,7 +2362,8 @@
                 admin_iban: bIban || "PK36TMFB0000000050698679",
                 invite_limit: iLimit,
                 base_invite_link: bLink || "https://www.titanicearning.apk.com/",
-                group_link: gLink || "https://whatsapp.com/channel/0029VbCcWry1nozD2cDpPb18"
+                group_link: gLink || "https://whatsapp.com/channel/0029VbCcWry1nozD2cDpPb18",
+                preview_limit: previewLimit
             }).then(() => {
                 alert("System Settings Updated Successfully!");
             });
@@ -2390,7 +2456,7 @@
                         if(rs.exists()) { 
                             let refUid = Object.keys(rs.val())[0]; 
                             let rU = rs.val()[refUid]; 
-                            db.ref('users/'+refUid).update({ active_invites: (rU.active_invites||0)+1, balance: (rU.balance||0)+77 }); 
+                            db.ref('users/'+refUid).update({ active_invites: (rU.active_invites||0)+1, invites: (rU.invites||0)+1, balance: (rU.balance||0)+77 }); 
                             db.ref(`users/${refUid}/earning_history`).push({ date: new Date().toLocaleString(), amount: 77, source: "Invite Bonus" }); 
                         } 
                     }); 
@@ -2402,7 +2468,7 @@
         function adminApproveRenewal(uid) { db.ref('users/'+uid).update({ renew_plan_status: 'active', renew_reject_reason: '' }).then(()=>alert("Renewal Approved! It will auto-activate on expiry.")); }
         function adminRejectRenewal(uid) { let res = document.getElementById('renew-rej-' + uid).value; if(!res) return alert("Enter reason!"); db.ref('users/'+uid).update({ renew_plan_status: 'none', renew_plan_id: -1, renew_reject_reason: res }).then(()=>alert("Renewal Rejected!")); }
         function adminApproveWithdraw(wId, uid, amt) { db.ref('withdrawals/'+wId).update({ status: 'Approved' }).then(()=>alert("Approved!")); }
-        function adminRejectWithdraw(wId, uid, amt) { let res = document.getElementById('with-rej-'+wId).value; if(!res) return alert("Enter reason!"); db.ref('users/'+uid).once('value', s=>{ let bal = s.val().balance||0; let totW = s.val().total_withdraw||0; db.ref('users/'+uid).update({ balance: bal+amt, total_withdraw: totW-amt }).then(()=>{ db.ref('withdrawals/'+wId).update({ status: 'Rejected', reject_reason: res }); alert("Rejected & Refunded!"); }); }); }
+        function adminRejectWithdraw(wId, uid, amt) { let res = document.getElementById('with-rej-'+wId).value; if(!res) return alert("Enter reason!"); db.ref('users/'+uid).once('value', s=>{ let bal = s.val().balance||0; let totW = s.val().total_withdraw||0; db.ref('users/'+uid).update({ balance: bal + parseFloat(amt), total_withdraw: Math.max(0, totW - parseFloat(amt)) }).then(()=>{ db.ref('withdrawals/'+wId).update({ status: 'Rejected', reject_reason: res }); alert("Rejected & Refunded!"); }); }); }
         function adminResolveComplaint(cId) { let res = document.getElementById('comp-reply-'+cId).value; if(!res) return alert("Write reply!"); db.ref('complaints/'+cId).update({ status: 'Resolved', admin_reply: res }).then(()=>alert("Resolved!")); }
         function adminBlockUser(uid) { let res = document.getElementById('block-res-'+uid).value; if(!res) return alert("Enter reason!"); db.ref('users/'+uid).update({ blocked: true, block_reason: res }).then(()=>alert("User Blocked successfully! They will be logged out instantly.")); loadAdminUI(); }
         function adminUnblockUser(uid) { db.ref('users/'+uid).update({ blocked: false, block_reason: '' }).then(()=>alert("Unblocked!")); loadAdminUI(); }
