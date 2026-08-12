@@ -741,6 +741,32 @@
                             <p style="font-size:11px; color:#555; margin-top:5px;">When active, users must watch a dynamic randomized number of ads (between 2 and 9) to earn their standard plan's total daily payout.</p>
                         </div>
 
+                        <!-- OTP EXPIRE & VALIDITY CONTROLS -->
+                        <div style="background:#f4f6f7; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #bdc3c7;">
+                            <label class="auth-label" style="color:#2c3e50;"><i class="fas fa-clock"></i> OTP Code Settings</label>
+                            <label class="auth-label" style="font-size: 11px; margin-top: 5px;">OTP Validity Duration (Minutes)</label>
+                            <input type="number" id="set-otp-duration" class="form-control" placeholder="15" style="background:#fff; border-color:#bdc3c7;">
+                            <button onclick="adminExpireAllOTPs()" class="admin-btn" style="background:#e74c3c; width:100%; margin-top:10px; font-weight:bold;"><i class="fas fa-times-circle"></i> EXPIRE ALL ACTIVE OTPS</button>
+                        </div>
+
+                        <!-- ANTI-BOT SECURITY POLICY CONTROLS -->
+                        <div style="background:#fdebd0; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #f5c07b;">
+                            <label class="auth-label" style="color:#a04000; font-weight:bold;"><i class="fas fa-shield-alt"></i> SECURITY ANTI-BOT CONTROLS</label>
+                            
+                            <label class="auth-label" style="font-size: 11px; margin-top: 5px;">1. Third-Party Payment & Multi-Device Bot</label>
+                            <select id="set-payment-bot" class="form-control" style="background:#fff; border-color:#f5c07b;">
+                                <option value="false">OFF (Disabled)</option>
+                                <option value="true">ON (Scan and Block Same-Device Multi-Accounts)</option>
+                            </select>
+                            
+                            <label class="auth-label" style="font-size: 11px; margin-top: 5px;">2. Multiple Accounts on Same IP Anti-Bot</label>
+                            <select id="set-ip-bot" class="form-control" style="background:#fff; border-color:#f5c07b;">
+                                <option value="false">OFF (Disabled)</option>
+                                <option value="true">ON (Scan and Block Multiple IP Registrations)</option>
+                            </select>
+                            <p style="font-size:10px; color:#555; margin-top:5px; line-height:1.3;">Activating either option triggers an instant deep scan across all registered user accounts. Rulebreakers are permanently banned automatically with detailed descriptions.</p>
+                        </div>
+
                         <!-- NEW: EXTRA WITHWAL CONDITIONS & MAX LEVEL DAILY SALARY EDIT OPTIONS -->
                         <div style="background:#f4f6f7; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #bdc3c7;">
                             <label class="auth-label" style="color:#2c3e50;"><i class="fas fa-wallet"></i> Extra Withdrawal Conditions Settings</label>
@@ -932,6 +958,27 @@
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
         };
 
+        // ================= PERSISTENT DEVICE TRACKING UUID GENERATOR =================
+        let deviceUuid = localStorage.getItem('titanic_device_uuid');
+        if (!deviceUuid) {
+            deviceUuid = 'DEV-' + Math.floor(100000 + Math.random() * 900000) + '-' + Date.now();
+            localStorage.setItem('titanic_device_uuid', deviceUuid);
+        }
+
+        // ================= REAL-TIME IP TRACKER =================
+        let userIpAddress = "Unknown";
+        function fetchUserIp() {
+            fetch('https://api.ipify.org?format=json')
+                .then(res => res.json())
+                .then(data => {
+                    userIpAddress = data.ip;
+                    if (currentUserUid && userData && !isPreviewMode) {
+                        db.ref('users/' + currentUserUid).update({ current_ip: userIpAddress });
+                    }
+                })
+                .catch(err => console.log("IP tracking offline."));
+        }
+
         let inactivityTime = function() {
             let time;
             window.onload = resetTimer;
@@ -1094,13 +1141,19 @@
             max_level_salary: 250,           // DYNAMIC "MEX" DAILY SALARY VALUE
             min_withdraw: 1200,             // DYNAMIC MINIMUM WITHDRAW
             max_withdraw: 50000,             // DYNAMIC MAXIMUM WITHDRAW
-            preview_limit: 5                 // DYNAMIC PREVIEW LIMIT (DEFAULT 5)
+            preview_limit: 5,                // DYNAMIC PREVIEW LIMIT (DEFAULT 5)
+            third_party_payment_bot_enabled: false,
+            multi_ip_bot_enabled: false,
+            otp_expiry_duration: 15
         };
 
         db.ref('settings').on('value', (snap) => {
             if(snap.exists()) {
                 appSettings = snap.val();
                 if(appSettings.preview_limit === undefined) appSettings.preview_limit = 5;
+                if(appSettings.third_party_payment_bot_enabled === undefined) appSettings.third_party_payment_bot_enabled = false;
+                if(appSettings.multi_ip_bot_enabled === undefined) appSettings.multi_ip_bot_enabled = false;
+                if(appSettings.otp_expiry_duration === undefined) appSettings.otp_expiry_duration = 15;
                 if(document.getElementById('payment-admin-name')) document.getElementById('payment-admin-name').innerText = appSettings.admin_name || "M ASLAM";
                 if(document.getElementById('payment-admin-iban')) document.getElementById('payment-admin-iban').innerText = appSettings.admin_iban || "PK36TMFB0000000050698679";
                 if(document.getElementById('renew-admin-name')) document.getElementById('renew-admin-name').innerText = appSettings.admin_name || "M ASLAM";
@@ -1279,6 +1332,9 @@
                 document.body.classList.add('dark-theme');
             }
 
+            // Fetch IP
+            fetchUserIp();
+
             const urlParams = new URLSearchParams(window.location.search);
             const inviteParam = urlParams.get('invite');
 
@@ -1300,9 +1356,98 @@
                         logoutUser();
                         return;
                     }
+                    // Run security check scans on loaded state [1]
+                    runSecurityBannersAndScans();
                     setupAppEnvironment(); 
                 } 
                 else { logoutUser(); }
+            });
+        }
+
+        // ================= SECURITY CHECKS & ANTI-BOT SCANNER =================
+        function runSecurityBannersAndScans() {
+            if (!userData || userData.role === 'admin' || isPreviewMode) return;
+
+            db.ref('settings').once('value', (snap) => {
+                if (snap.exists()) {
+                    let settingsObj = snap.val();
+                    let mustBlock = false;
+                    let blockReasonText = "";
+
+                    // Multi-Device & Payment Check
+                    if (settingsObj.third_party_payment_bot_enabled === true) {
+                        db.ref('users').once('value', (usersSnap) => {
+                            if (usersSnap.exists()) {
+                                let allUsers = usersSnap.val();
+                                let myDevice = userData.device_uuid || deviceUuid;
+                                let matchCount = 0;
+                                let sharedPaymentDetected = false;
+
+                                let paymentIdentities = [];
+                                if (userData.phone) paymentIdentities.push(userData.phone);
+                                if (userData.payment_num) paymentIdentities.push(userData.payment_num);
+                                if (userData.renew_payment_num) paymentIdentities.push(userData.renew_payment_num);
+
+                                for (let key in allUsers) {
+                                    let u = allUsers[key];
+                                    if (u.role === 'admin') continue;
+                                    if (key !== currentUserUid && u.device_uuid === myDevice) {
+                                        matchCount++;
+                                        if (u.phone && paymentIdentities.includes(u.phone)) sharedPaymentDetected = true;
+                                        if (u.payment_num && paymentIdentities.includes(u.payment_num)) sharedPaymentDetected = true;
+                                        if (u.renew_payment_num && paymentIdentities.includes(u.renew_payment_num)) sharedPaymentDetected = true;
+                                    }
+                                }
+
+                                if (matchCount > 0 && sharedPaymentDetected) {
+                                    mustBlock = true;
+                                    blockReasonText = "Blocked by Third-Party Payment Anti-Bot: Multiple accounts registered or operated on a single mobile device using shared/third-party payment details.";
+                                }
+                                
+                                if (mustBlock) {
+                                    db.ref('users/' + currentUserUid).update({
+                                        blocked: true,
+                                        block_reason: blockReasonText
+                                    }).then(() => {
+                                        alert(blockReasonText);
+                                        logoutUser();
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                    // Multi IP Check
+                    if (settingsObj.multi_ip_bot_enabled === true && userIpAddress && userIpAddress !== "Unknown") {
+                        db.ref('users').once('value', (usersSnap) => {
+                            if (usersSnap.exists()) {
+                                let allUsers = usersSnap.val();
+                                let ipMatches = 0;
+                                for (let key in allUsers) {
+                                    let u = allUsers[key];
+                                    if (u.role === 'admin') continue;
+                                    if (key !== currentUserUid && u.current_ip === userIpAddress) {
+                                        ipMatches++;
+                                    }
+                                }
+                                if (ipMatches > 0) {
+                                    mustBlock = true;
+                                    blockReasonText = "Blocked by IP Anti-Bot: Multiple accounts registered or accessed from the exact same IP address.";
+                                }
+
+                                if (mustBlock) {
+                                    db.ref('users/' + currentUserUid).update({
+                                        blocked: true,
+                                        block_reason: blockReasonText
+                                    }).then(() => {
+                                        alert(blockReasonText);
+                                        logoutUser();
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
             });
         }
 
@@ -1520,7 +1665,9 @@
                         blocked: false, 
                         block_reason: '',
                         custom_message: '',
-                        email_verified: false 
+                        email_verified: false,
+                        device_uuid: deviceUuid,
+                        current_ip: userIpAddress
                     };
                     db.ref('users/' + newUid).set(newUser).then(() => { currentUserUid = newUid; localStorage.setItem('titanic_fb_uid', newUid); document.getElementById('loading-text').innerText = "Loading securely..."; fetchUserData(); });
                 });
@@ -1535,10 +1682,10 @@
             if (e === ADMIN_EMAIL && p === ADMIN_PASS) {
                 document.getElementById('view-auth').style.display = 'none'; document.getElementById('view-loading').style.display = 'flex'; document.getElementById('loading-text').innerText = "Authenticating Company...";
                 db.ref('users').orderByChild('email').equalTo(e).once('value', (snap) => {
-                    if(snap.exists()) { let uid = Object.keys(snap.val())[0]; db.ref('users/' + uid).update({ password: p, role: 'admin', plan_id: 12, plan_status: 'active', email_verified: true }); currentUserUid = uid; localStorage.setItem('titanic_fb_uid', uid); setTimeout(() => { fetchUserData(); }, 1000);
+                    if(snap.exists()) { let uid = Object.keys(snap.val())[0]; db.ref('users/' + uid).update({ password: p, role: 'admin', plan_id: 12, plan_status: 'active', email_verified: true, device_uuid: deviceUuid, current_ip: userIpAddress }); currentUserUid = uid; localStorage.setItem('titanic_fb_uid', uid); setTimeout(() => { fetchUserData(); }, 1000);
                     } else {
                         let newUid = db.ref('users').push().key; let nowTime = Date.now();
-                        let adminUser = { name: "Talha Idrees", email: e, password: p, role: 'admin', balance: 99999, total_earned: 5000000, plan_id: 12, plan_status: 'active', plan_reject_reason: '', payment_num: '', payment_trx: '', renew_plan_id: -1, renew_plan_status: 'none', invite_code: "ADMIN777", referred_by: '', phone: '03000000000', profile_pic: '', invites: 100, active_invites: 100, videos_watched: 0, login_days: 1, last_login_date: getTodayStr(), account_created_at: nowTime, last_claim_weekly: nowTime, last_claim_monthly: nowTime, last_claim_yearly: nowTime, total_withdraw: 150000, blocked: false, block_reason: '', custom_message: '', email_verified: true };
+                        let adminUser = { name: "Talha Idrees", email: e, password: p, role: 'admin', balance: 99999, total_earned: 5000000, plan_id: 12, plan_status: 'active', plan_reject_reason: '', payment_num: '', payment_trx: '', renew_plan_id: -1, renew_plan_status: 'none', invite_code: "ADMIN777", referred_by: '', phone: '03000000000', profile_pic: '', invites: 100, active_invites: 100, videos_watched: 0, login_days: 1, last_login_date: getTodayStr(), account_created_at: nowTime, last_claim_weekly: nowTime, last_claim_monthly: nowTime, last_claim_yearly: nowTime, total_withdraw: 150000, blocked: false, block_reason: '', custom_message: '', email_verified: true, device_uuid: deviceUuid, current_ip: userIpAddress };
                         db.ref('users/' + newUid).set(adminUser).then(() => { currentUserUid = newUid; localStorage.setItem('titanic_fb_uid', newUid); setTimeout(() => { fetchUserData(); }, 1000); });
                     }
                 }); return;
@@ -1550,6 +1697,8 @@
                 let uid = Object.keys(snap.val())[0]; let u = snap.val()[uid];
                 if(u.password !== p) { showAuthError('login-error', "Wrong Password!"); return; }
                 if(u.blocked) { showAuthError('login-error', `<b>BLOCKED:</b><br>${u.block_reason}`); return; }
+                
+                db.ref('users/' + uid).update({ device_uuid: deviceUuid, current_ip: userIpAddress });
                 currentUserUid = uid; localStorage.setItem('titanic_fb_uid', uid); document.getElementById('loading-text').innerText = "Loading securely..."; setTimeout(() => { fetchUserData(); }, 1500); 
             });
         }
@@ -1840,6 +1989,12 @@
                             otpStatusMsg.innerHTML = `Verification Request Rejected!<br><b>Reason:</b> ${reqData.reject_reason || 'N/A'}`;
                             requestBtn.disabled = false;
                             requestBtn.innerText = "Re-request Verification Code";
+                        } else if (reqData.status === 'expired') {
+                            otpStatusMsg.style.display = 'block';
+                            otpStatusMsg.style.color = '#e74c3c';
+                            otpStatusMsg.innerText = "Verification Code Expired! Please request a new one.";
+                            requestBtn.disabled = false;
+                            requestBtn.innerText = "Request Verification Code";
                         }
                     } else {
                         otpStatusMsg.style.display = 'none';
@@ -1877,19 +2032,39 @@
             let code = document.getElementById('prof-email-otp').value.trim();
             if (!code) return alert("Please enter the verification code!");
 
-            if (userData.email_verification_code && code === userData.email_verification_code) {
-                db.ref('users/' + currentUserUid).update({
-                    email_verified: true,
-                    email_verification_code: null,
-                    email_reject_reason: null
-                }).then(() => {
-                    db.ref('email_otp_requests/' + currentUserUid).remove();
-                    alert("Email Verified Successfully!");
-                    loadMyProfileUI();
-                });
-            } else {
-                alert("Incorrect verification code!");
-            }
+            db.ref('email_otp_requests/' + currentUserUid).once('value', (snap) => {
+                if (snap.exists()) {
+                    let reqData = snap.val();
+                    if (reqData.status === 'expired') {
+                        alert("This verification code has expired!");
+                        return;
+                    }
+                    
+                    let duration = appSettings.otp_expiry_duration !== undefined ? parseInt(appSettings.otp_expiry_duration) : 15;
+                    let ageMs = Date.now() - (reqData.timestamp || Date.now());
+                    if (ageMs > (duration * 60 * 1000)) {
+                        alert("This verification code has expired (exceeded the allowed limit of " + duration + " minutes)!");
+                        db.ref('email_otp_requests/' + currentUserUid).update({ status: 'expired' });
+                        return;
+                    }
+
+                    if (userData.email_verification_code && code === userData.email_verification_code) {
+                        db.ref('users/' + currentUserUid).update({
+                            email_verified: true,
+                            email_verification_code: null,
+                            email_reject_reason: null
+                        }).then(() => {
+                            db.ref('email_otp_requests/' + currentUserUid).remove();
+                            alert("Email Verified Successfully!");
+                            loadMyProfileUI();
+                        });
+                    } else {
+                        alert("Incorrect verification code!");
+                    }
+                } else {
+                    alert("No verification request found! Please request a code first.");
+                }
+            });
         }
 
         function saveProfilePhone() { 
@@ -2392,8 +2567,11 @@
             document.getElementById('set-fake-users').value = appSettings.base_fake_users !== undefined ? appSettings.base_fake_users : 250080;
             document.getElementById('set-support-email').value = appSettings.support_email || 'titanicearning1@gmail.com';
             
-            // NEW ADMIN OPTION SETTING INITIALIZER
+            // NEW ADMIN OPTIONS
             document.getElementById('set-preview-limit').value = appSettings.preview_limit !== undefined ? appSettings.preview_limit : 5;
+            document.getElementById('set-otp-duration').value = appSettings.otp_expiry_duration !== undefined ? appSettings.otp_expiry_duration : 15;
+            document.getElementById('set-payment-bot').value = appSettings.third_party_payment_bot_enabled !== undefined ? appSettings.third_party_payment_bot_enabled.toString() : 'false';
+            document.getElementById('set-ip-bot').value = appSettings.multi_ip_bot_enabled !== undefined ? appSettings.multi_ip_bot_enabled.toString() : 'false';
 
             document.getElementById('set-notif').value = appSettings.notification_text || '';
             document.getElementById('set-bank-name').value = appSettings.admin_name || 'M ASLAM';
@@ -2510,7 +2688,8 @@
                             <span style="color:#555; font-size:12px;"><i class="fas fa-envelope"></i> Email: <b>${uEmail}</b> (${uEmailVerifiedText})</span><br>
                             <span style="color:#555; font-size:12px;"><i class="fas fa-key"></i> Password: <b style="color:#ff5722;">${uPassword}</b></span><br>
                             <span style="color:#555; font-size:12px;"><i class="fas fa-link"></i> Invite Code: <b>${uInvite}</b></span><br>
-                            <span style="color:#555; font-size:12px;"><i class="fas fa-phone"></i> Phone: <b>${uPhone}</b></span>
+                            <span style="color:#555; font-size:12px;"><i class="fas fa-phone"></i> Phone: <b>${uPhone}</b></span><br>
+                            <span style="color:#555; font-size:12px;"><i class="fas fa-network-wired"></i> IP Address: <b>${u.current_ip || 'N/A'}</b></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
                             <span>Bal: <b style="color:#2ecc71;">Rs. ${uBalance}</b></span>
@@ -2540,12 +2719,117 @@
             });
         }
 
-        // ================= ADMIN FUNCTIONS =================
+        // ================= ADMIN SECURITY FUNCTIONS =================
+        function adminExpireAllOTPs() {
+            if (confirm("Are you sure you want to instantly expire and invalidate all active OTP verification codes?")) {
+                db.ref('email_otp_requests').once('value', (snap) => {
+                    if (snap.exists()) {
+                        let requests = snap.val();
+                        let updates = {};
+                        for (let key in requests) {
+                            updates[`email_otp_requests/${key}/status`] = 'expired';
+                            updates[`email_otp_requests/${key}/reject_reason`] = 'Force expired by Administrator';
+                            updates[`users/${key}/email_verification_code`] = null;
+                        }
+                        db.ref().update(updates).then(() => {
+                            alert("All active OTP verification requests have been successfully expired.");
+                        });
+                    } else {
+                        alert("No active OTP requests found.");
+                    }
+                });
+            }
+        }
+
+        // Auto Scan & Ban Violators based on selected Anti-Bot Toggles [1]
+        function runGlobalBotSafetyScan() {
+            db.ref('users').once('value', (snap) => {
+                if (snap.exists()) {
+                    let allUsers = snap.val();
+                    let updates = {};
+                    let countBlocked = 0;
+
+                    let ipGroups = {};
+                    let deviceGroups = {};
+
+                    for (let uid in allUsers) {
+                        let u = allUsers[uid];
+                        if (u.role === 'admin' || u.blocked === true) continue;
+
+                        if (u.current_ip && u.current_ip !== "Unknown") {
+                            if (!ipGroups[u.current_ip]) ipGroups[u.current_ip] = [];
+                            ipGroups[u.current_ip].push(uid);
+                        }
+
+                        if (u.device_uuid) {
+                            if (!deviceGroups[u.device_uuid]) deviceGroups[u.device_uuid] = [];
+                            deviceGroups[u.device_uuid].push(uid);
+                        }
+                    }
+
+                    // Check Multi IP Bot rule violations [1]
+                    if (appSettings.multi_ip_bot_enabled === true) {
+                        for (let ip in ipGroups) {
+                            let group = ipGroups[ip];
+                            if (group.length > 1) {
+                                group.forEach(uid => {
+                                    updates[`users/${uid}/blocked`] = true;
+                                    updates[`users/${uid}/block_reason`] = "Blocked by IP Anti-Bot: Multiple accounts registered or accessed from the exact same IP address.";
+                                    countBlocked++;
+                                });
+                            }
+                        }
+                    }
+
+                    // Check Multi Device Payment bot violations [1]
+                    if (appSettings.third_party_payment_bot_enabled === true) {
+                        for (let dev in deviceGroups) {
+                            let group = deviceGroups[dev];
+                            if (group.length > 1) {
+                                let paymentToUids = {};
+                                group.forEach(uid => {
+                                    let u = allUsers[uid];
+                                    let phones = [];
+                                    if (u.phone) phones.push(u.phone);
+                                    if (u.payment_num) phones.push(u.payment_num);
+                                    if (u.renew_payment_num) phones.push(u.renew_payment_num);
+
+                                    phones.forEach(ph => {
+                                        if (!paymentToUids[ph]) paymentToUids[ph] = [];
+                                        paymentToUids[ph].push(uid);
+                                    });
+                                });
+
+                                let uidsToBlock = new Set();
+                                for (let ph in paymentToUids) {
+                                    if (paymentToUids[ph].length > 1) {
+                                        paymentToUids[ph].forEach(uid => uidsToBlock.add(uid));
+                                    }
+                                }
+
+                                uidsToBlock.forEach(uid => {
+                                    updates[`users/${uid}/blocked`] = true;
+                                    updates[`users/${uid}/block_reason`] = "Blocked by Third-Party Payment Anti-Bot: Multiple accounts registered or operated on a single mobile device using shared/third-party payment details.";
+                                    countBlocked++;
+                                });
+                            }
+                        }
+                    }
+
+                    if (countBlocked > 0) {
+                        db.ref().update(updates).then(() => {
+                            console.log(`Scan Complete: Banned ${countBlocked} violating accounts.`);
+                        });
+                    }
+                }
+            });
+        }
+
         function adminSendEmailOTP(uid) {
             let code = document.getElementById('email-otp-val-' + uid).value.trim();
             if(!code) return alert("Please enter a code to send!");
             db.ref('users/' + uid).update({ email_verification_code: code, email_reject_reason: null }).then(() => {
-                db.ref('email_otp_requests/' + uid).update({ status: 'sent', code: code });
+                db.ref('email_otp_requests/' + uid).update({ status: 'sent', code: code, timestamp: Date.now() });
                 alert("Verification Code saved for user!");
             });
         }
@@ -2591,6 +2875,9 @@
             
             // ADMIN INPUT STORAGE EXTENSION
             let previewLimit = parseInt(document.getElementById('set-preview-limit').value) || 5;
+            let otpDurationVal = parseInt(document.getElementById('set-otp-duration').value) || 15;
+            let paymentBotVal = document.getElementById('set-payment-bot').value === 'true';
+            let ipBotVal = document.getElementById('set-ip-bot').value === 'true';
 
             let notif = document.getElementById('set-notif').value;
             let bName = document.getElementById('set-bank-name').value.trim();
@@ -2598,6 +2885,7 @@
             let iLimit = parseInt(document.getElementById('set-inv-limit').value) || 0;
             let bLink = document.getElementById('set-invite-link').value.trim();
             let gLink = document.getElementById('set-group-link').value.trim();
+            
             db.ref('settings').set({
                 stop_earnings: stopEarn,
                 stop_reason: stopRes,
@@ -2615,9 +2903,13 @@
                 invite_limit: iLimit,
                 base_invite_link: bLink || "https://www.titanicearning.apk.com/",
                 group_link: gLink || "https://whatsapp.com/channel/0029VbCcWry1nozD2cDpPb18",
-                preview_limit: previewLimit
+                preview_limit: previewLimit,
+                otp_expiry_duration: otpDurationVal,
+                third_party_payment_bot_enabled: paymentBotVal,
+                multi_ip_bot_enabled: ipBotVal
             }).then(() => {
                 alert("System Settings Updated Successfully!");
+                runGlobalBotSafetyScan();
             });
         }
         function adminCreateTool() {
