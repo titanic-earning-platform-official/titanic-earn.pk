@@ -478,7 +478,7 @@
                     
                     <div class="profile-card" style="text-align:center; background:#ffebeb; border:1px solid #ffcccc;">
                         <h3 style="color:#e74c3c; margin-bottom:10px;">Account Options</h3>
-                        <button onclick="logoutUser()" class="auth-btn-new" style="background:#e74c3c; margin:0;"><i class="fas fa-power-off"></i> Logout / Sign Out</button>
+                        <button onclick="logoutUser()" class="auth-btn-new" style="background:#e74c3c; margin:0;"><i class="fas fa-power-off"></i> Sign Out</button>
                     </div>
                 </div>
 
@@ -615,13 +615,13 @@
                             <!-- NEW "BY LEVEL" RANK TAB ADDED -->
                             <button class="rank-tab" onclick="switchRankingTab('level', this)">By Level</button>
                             <button class="rank-tab" onclick="switchRankingTab('invite', this)">Top Invites</button>
-                            <button class="rank-tab" onclick="switchRankingTab('withdraw', this)">Today Withdraw</button>
+                            <button class="rank-tab" onclick="switchRankingTab('withdraw', this)">Top Withdraw</button>
                         </div>
                         <div id="rank-plan-selector" style="display:none; margin-bottom:15px;">
                             <select id="rank-plan-dropdown" class="form-control" onchange="loadRankingUI()"></select>
                         </div>
                         <div id="ranking-list-container">
-                            <div style="text-align:center; padding:20px; color:#999;">Loading real-time rankings...</div>
+                            <div style="text-align:center; padding:20px; color:#999;">Loading...</div>
                         </div>
                     </div>
                 </div>
