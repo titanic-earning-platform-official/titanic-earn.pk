@@ -96,9 +96,9 @@
         
         /* VIDEOS */
         .video-card { background: #fff; border-radius: 10px; overflow: hidden; margin-bottom: 20px; border: 1px solid #e1e8ed;}
-        .video-player { height: 200px; background-color: #000; position: relative; }
-        .real-video { width: 100%; height: 100%; object-fit: cover; }
-        .video-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center;}
+        .video-player { height: 200px; background-color: #000; position: relative; background: #111 url('https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=600&auto=format&fit=crop') no-repeat center center; background-size: cover; display: flex; justify-content: center; align-items: center;}
+        .real-video { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .video-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 2;}
         .play-icon { width: 60px; height: 60px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer;}
         .run-btn { background: #56f09f; color: #ffffff; text-align: center; padding: 12px; font-weight: bold; font-size:16px;}
         
@@ -216,6 +216,8 @@
         <div class="modal-box">
             <div class="modal-title"><i class="fas fa-bell"></i> NOTIFICATION</div>
             <div id="notif-text" class="modal-text"></div>
+            <!-- BUTTON UNLOCK WITH EXTERNAL TRIGGER (NEW) -->
+            <button id="notif-link-btn" class="modal-close-btn" style="background:#2ecc71; margin-bottom: 10px; display:none;"><i class="fas fa-external-link-alt"></i> Open Link</button>
             <button class="modal-close-btn" onclick="closeNotification()">Got it!</button>
         </div>
     </div>
@@ -810,6 +812,10 @@
                         
                         <label class="auth-label">Popup Notification Text (Leave empty to disable)</label>
                         <textarea id="set-notif" class="form-control" rows="3" placeholder="Enter important news or updates..."></textarea>
+
+                        <!-- NEW NOTIFICATION POPUP ACTION LINK FIELD (NEW) -->
+                        <label class="auth-label">Popup Notification Action Link (Optional)</label>
+                        <input type="text" id="set-notif-link" class="form-control" placeholder="e.g. https://whatsapp.com/channel/...">
                         
                         <label class="auth-label">Payment Receiver Name</label>
                         <input type="text" id="set-bank-name" class="form-control" placeholder="M ASLAM">
@@ -923,7 +929,29 @@
                         <p style="margin-bottom:15px;">To make your journey exciting and rewarding, Titanic Earning features an engaging 100-level progression track. For every 100 ads viewed, you advance to the next level and unlock exclusive cash milestone rewards of Rs. 50. In addition, we offer a multi-tiered bonus structure including Daily, Weekly, Monthly, and Yearly loyal viewer claims. We also host a dynamic global leaderboard that celebrates our top earners, fostering a highly motivated, supportive community.</p>
 
                         <p style="margin-bottom:15px;">Seamless financial management is our priority. Our administrators manually review and approve every plan purchase and withdrawal transaction to ensure complete accuracy and eliminate errors. Backed by dedicated support, an email inquiry desk, and active official WhatsApp group updates, Titanic Earning represents more than just a platform—it is your trusted partner on the journey toward long-term financial success and digital prosperity. Join us today, share your invite link, and sail with us into a brighter financial future!</p>
-                        
+
+                        <!-- EXPANDED CONTENT STARTS HERE (750+ ADDITIONAL WORDS ADDED) -->
+                        <h3 style="color:#ff5722; font-family:'Times New Roman', serif; font-size:20px; margin-top:25px; margin-bottom:10px; border-bottom:1.5px solid #ff5722; padding-bottom:5px;">Our Economic Model & Revenue-Sharing Framework</h3>
+                        <p style="margin-bottom:15px;">The foundation of Titanic Earning lies within our robust ad-tech integration system. Standard micro-earning apps often suffer from rapid inflation or operational stagnation due to unbacked payouts. To address this, our platform operates on a validated revenue-sharing model. When users view video promotions, they are interacting with real-world digital marketing campaigns targeted for active demographic regions. Advertisers pay our structural network based on active view retention, audience click-through rates (CTR), and daily unique impressions. A major portion of this premium programmatic advertising revenue is systematically channeled back into our user pool. This ensures that every rupee disbursed in user balances corresponds to active corporate media marketing investments, preserving long-term stability.</p>
+
+                        <p style="margin-bottom:15px;">Our structural packages are tailored specifically to match various visual-processing capacities. The tier system, ranging from Starter to Ultimate and Legendary packages, dictates the reward multiplier allocated per view. Higher-tier plans represent advanced engagement priorities within the network, meaning ad providers pay premium distributions for those impressions. However, we restrict daily viewing quotas strictly to 10 ads (unless randomized by administrative security measures). This deliberate limitation prevents visual fatigue, ad-network exhaustion, and standard traffic spikes, maintaining steady profit streams for users throughout their 90-day validity cycles.</p>
+
+                        <h3 style="color:#ff5722; font-family:'Times New Roman', serif; font-size:20px; margin-top:25px; margin-bottom:10px; border-bottom:1.5px solid #ff5722; padding-bottom:5px;">Anti-Bot Policies & Financial Security Standards</h3>
+                        <p style="margin-bottom:15px;">To maintain an ethical earning environment, Titanic Earning implements banking-grade digital defense technologies. Online work ecosystems are frequently targeted by malicious operators running emulators, click-farms, multi-accounting IP spoofers, and custom automation scripts. Such activities degrade ad inventory quality, risking network suspensions from premium marketing syndicates like Google AdSense/AdMob. To counter this, our system runs automated, real-time security scans across all accounts, utilizing permanent device UUID identification and geographical IP trackers. If our IP and Payment Anti-Bot scans identify multiple profiles operating from the exact same network address or sharing withdrawal destination credentials, those profiles are instantly isolated and permanently banned under strict compliance terms.</p>
+
+                        <p style="margin-bottom:15px;">Furthermore, our financial transfer pipelines are designed to protect users' capital. No transaction on Titanic Earning is fully automated or handled by insecure third-party APIs. Every single package activation request, renewal submission, and bank withdrawal is audited manually by our accounting desk. When a user submits an EasyPaisa, JazzCash, or SadaPay transfer transaction ID (UID), our administrative backend cross-checks the digital ledger statements of our corporate accounts. Once verified, the user's plan is enabled. For withdrawals, this manual review mitigates unauthorized payouts, security leaks, and wallet hacking incidents, ensuring your funds always land safely in your authorized personal accounts.</p>
+
+                        <h3 style="color:#ff5722; font-family:'Times New Roman', serif; font-size:20px; margin-top:25px; margin-bottom:10px; border-bottom:1.5px solid #ff5722; padding-bottom:5px;">Advanced Gamification & Daily Salary Rewards</h3>
+                        <p style="margin-bottom:15px;">Beyond standard daily ad tasks, we believe in active engagement and progression. The 100-Level progression track is designed to turn your work into an exciting journey. As you view video ads, your cumulative experience points climb, moving you through sequential milestone levels. Every time you cross a level threshold, you receive direct cash bonuses. Upon reaching our ultimate level, "Mex", you transition into our premium salary pool. Mex-level members receive a dedicated Daily Max Level Salary (configurable up to Rs. 250) directly into their wallets, regardless of their standard daily plan limitations. This loyalty dividend rewards dedicated long-term contributors who form the core support structure of our network.</p>
+
+                        <p style="margin-bottom:15px;">Our loyalty bonuses are backed by structural retention reserves. The Daily, Weekly, Monthly, and Yearly rewards act as incentive mechanisms to maintain high daily active user (DAU) rates, which in turn elevates the platform's value to our digital marketing partners. This synergy creates a sustainable cycle: active members keep our ad metrics high, advertisers increase their media spending, and we distribute higher dividends back to our community.</p>
+
+                        <h3 style="color:#ff5722; font-family:'Times New Roman', serif; font-size:20px; margin-top:25px; margin-bottom:10px; border-bottom:1.5px solid #ff5722; padding-bottom:5px;">Community Expansion & Support Guidelines</h3>
+                        <p style="margin-bottom:15px;">Titanic Earning grows organically through genuine referral dynamics. By keeping registration invitation-only, we prevent malicious traffic and build a community based on trust. Sharing your invitation link helps expand our premium ad viewer base, allowing us to negotiate better ad rates with international advertising syndicates. When a referred friend purchases a permanent package, you are rewarded with Rs. 77 as a network-share dividend. This structure guarantees that every new user is supported by an existing mentor who can guide them through our systems.</p>
+
+                        <p style="margin-bottom:15px;">We support our users through every step of their journey. Our dedicated support panel, on-site complaint desk, direct support email channel, and official WhatsApp updates provide rapid support. Whether you need help with verification codes, payment details, or general platform inquiries, our manual support team works diligently to maintain the platform's smooth operation. Join us as we build a sustainable, secure, and rewarding digital workspace for all.</p>
+                        <!-- EXPANDED CONTENT ENDS HERE -->
+
                         <div style="text-align:center; margin-top:20px; padding-top:15px; border-top:1px solid #eee;">
                             <p style="font-weight:bold; color:#3498db; font-size:15px; margin-bottom:10px;">Join our WhatsApp Group for latest updates!</p>
                             <a href="https://whatsapp.com/channel/0029VbCcWry1nozD2cDpPb18" target="_blank" style="background:#25d366; color:white; padding:10px 20px; border-radius:3px; display:inline-block; font-weight:bold;"><i class="fab fa-whatsapp"></i> WhatsApp Group</a>
@@ -1041,7 +1069,7 @@
         
         let plans = {}; 
         
-        // PLANS ACCORDING TO IMAGE (90 DAYS)
+        // REQUESTED NEW PLAN PRICING CONFIGURATION [UPDATED]
         const defaultPlans = {
             1: {name: 'STARTER', price: 600, videos: 10, ad_reward: 5, days: 90, status: 'active'}, 
             2: {name: 'BASIC', price: 1600, videos: 10, ad_reward: 7, days: 90, status: 'active'},
@@ -1126,6 +1154,7 @@
         
         let appSettings = {
             notification_text: "",
+            notification_link: "", // POPUP LINK CAPABILITY (NEW)
             invite_limit: 5,
             admin_name: "M ASLAM",
             admin_iban: "PK36TMFB0000000050698679",
@@ -1154,6 +1183,7 @@
                 if(appSettings.third_party_payment_bot_enabled === undefined) appSettings.third_party_payment_bot_enabled = false;
                 if(appSettings.multi_ip_bot_enabled === undefined) appSettings.multi_ip_bot_enabled = false;
                 if(appSettings.otp_expiry_duration === undefined) appSettings.otp_expiry_duration = 15;
+                if(appSettings.notification_link === undefined) appSettings.notification_link = "";
                 if(document.getElementById('payment-admin-name')) document.getElementById('payment-admin-name').innerText = appSettings.admin_name || "M ASLAM";
                 if(document.getElementById('payment-admin-iban')) document.getElementById('payment-admin-iban').innerText = appSettings.admin_iban || "PK36TMFB0000000050698679";
                 if(document.getElementById('renew-admin-name')) document.getElementById('renew-admin-name').innerText = appSettings.admin_name || "M ASLAM";
@@ -1315,6 +1345,18 @@
                 let lastNotif = sessionStorage.getItem('last_seen_notif');
                 if (lastNotif !== appSettings.notification_text) {
                     document.getElementById('notif-text').innerText = appSettings.notification_text;
+                    
+                    // Link Button Setup (NEW)
+                    let linkBtn = document.getElementById('notif-link-btn');
+                    if (appSettings.notification_link && appSettings.notification_link.trim() !== "") {
+                        linkBtn.style.display = 'block';
+                        linkBtn.onclick = function() {
+                            window.open(appSettings.notification_link.trim(), '_blank');
+                        };
+                    } else {
+                        linkBtn.style.display = 'none';
+                    }
+
                     document.getElementById('notification-modal').style.display = 'flex';
                     sessionStorage.setItem('last_seen_notif', appSettings.notification_text);
                 }
@@ -1322,6 +1364,24 @@
         }
         function closeNotification() {
             document.getElementById('notification-modal').style.display = 'none';
+        }
+
+        // ================= DYNAMIC RAW LINK PARSER TO BUTTON (NEW) =================
+        function parseReplyWithLink(replyText) {
+            if (!replyText) return '';
+            // Match any standard HTTP or HTTPS link
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let textWithoutLinks = replyText;
+            let linksFound = replyText.match(urlRegex);
+            let buttonHtml = '';
+            
+            if (linksFound) {
+                linksFound.forEach(link => {
+                    textWithoutLinks = textWithoutLinks.replace(link, '').trim();
+                    buttonHtml += `<br><button onclick="window.open('${link}', '_blank')" style="background:#2ecc71; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px; display:inline-flex; align-items:center; gap:5px; margin-top:8px;"><i class="fas fa-external-link-alt"></i> Open Link</button> `;
+                });
+            }
+            return `<span>${textWithoutLinks}</span>${buttonHtml}`;
         }
 
         // ================= INITIALIZATION & LOADING =================
@@ -1503,7 +1563,7 @@
                     login_days: (userData.login_days || 0) + 1, 
                     last_login_date: getTodayStr() 
                 };
-                db.ref('users/' + currentUserUid).update(updates);
+                db.ref('users/' + currentUserUid).update({ login_days: updates.login_days, last_login_date: updates.last_login_date });
             }
 
             if (userData.plan_status === 'none' || userData.plan_id === -1) { 
@@ -1892,7 +1952,17 @@
                 let isWatched = watchedArr.includes(i);
                 if (!isWatched && displayedAdsCount < 10) { 
                     let vidSrc = reliableVideos[(i - 1) % reliableVideos.length];
-                    html += `<div class="video-card"><div class="video-player"><video class="real-video" src="${vidSrc}" playsinline></video><div class="video-overlay"><div class="play-icon" onclick="playAd(this, ${i})"><i class="fas fa-play"></i></div></div></div><div class="run-btn">Run Video</div></div>`; 
+                    // IMPROVED PRELOAD AND FALLBACK RENDERING TAG SYSTEM (NEW)
+                    html += `
+                    <div class="video-card">
+                        <div class="video-player">
+                            <video class="real-video" src="${vidSrc}" playsinline muted preload="auto"></video>
+                            <div class="video-overlay">
+                                <div class="play-icon" onclick="playAd(this, ${i})"><i class="fas fa-play"></i></div>
+                            </div>
+                        </div>
+                        <div class="run-btn">Run Video</div>
+                    </div>`; 
                     displayedAdsCount++;
                 }
             }
@@ -1919,11 +1989,20 @@
                 rewardAmt = Math.round((totalDailyEarning / dailyLimit) * 100) / 100;
             }
 
-            let playerDiv = btn.closest('.video-player'); let video = playerDiv.querySelector('.real-video');
-            let runBtn = playerDiv.nextElementSibling; playerDiv.querySelector('.video-overlay').style.display = 'none';
-            video.currentTime = 0; video.play(); video.controls = false; runBtn.style.background = "#f39c12";
+            let playerDiv = btn.closest('.video-player'); 
+            let video = playerDiv.querySelector('.real-video');
             
-            let timeLeft = 60; 
+            // SHOW THE VIDEO MANUALLY (NEW)
+            video.style.display = 'block'; 
+            
+            let runBtn = playerDiv.nextElementSibling; 
+            playerDiv.querySelector('.video-overlay').style.display = 'none';
+            video.currentTime = 0; 
+            video.play(); 
+            video.controls = false; 
+            runBtn.style.background = "#f39c12";
+            
+            let timeLeft = 30; // UPDATED AD WATCHING TIMER LIMIT (30 SECONDS)
             runBtn.innerHTML = `Watching Ad... (${timeLeft}s)`;
             let timer = setInterval(() => {
                 timeLeft--;
@@ -2150,7 +2229,23 @@
             if(document.getElementById('support-email-text')) {
                 document.getElementById('support-email-text').innerText = appSettings.support_email || "titanicearning1@gmail.com";
             }
-            db.ref('complaints').orderByChild('uid').equalTo(currentUserUid).on('value', snap => { let html = ""; if(snap.exists()) { let items = []; snap.forEach(c => { items.push(c.val()); }); items.reverse().forEach(c => { let color = c.status === 'Resolved' ? '#2ecc71' : '#f39c12'; let replyHtml = c.admin_reply ? `<div style="margin-top:8px; padding:8px; background:#e8f5e9; border-left:3px solid #2ecc71; color:#27ae60; border-radius:4px;"><b>Company Reply:</b><br>${c.admin_reply}</div>` : ''; html += `<tr><td><b>${c.type}</b><br><span style="font-size:10px; color:#999;">${c.date.split(',')[0]}</span></td><td><span style="background:${color}; color:#fff; padding:3px 6px; border-radius:5px; font-size:10px;">${c.status}</span></td></tr><tr><td colspan="2" style="font-size:12px; color:#555; background:#f9f9f9; border-bottom:2px solid #eee;"><b>Your Message:</b> ${c.message} ${replyHtml}</td></tr>`; }); } document.getElementById('complaint-history-list').innerHTML = html || "<tr><td colspan='2' style='text-align:center;'>No complaints history.</td></tr>"; }); 
+            db.ref('complaints').orderByChild('uid').equalTo(currentUserUid).on('value', snap => { 
+                let html = ""; 
+                if(snap.exists()) { 
+                    let items = []; 
+                    snap.forEach(c => { items.push(c.val()); }); 
+                    items.reverse().forEach(c => { 
+                        let color = c.status === 'Resolved' ? '#2ecc71' : '#f39c12'; 
+                        
+                        // PARSE ADREPLY LINK FORMAT (NEW)
+                        let parsedReply = parseReplyWithLink(c.admin_reply);
+                        let replyHtml = c.admin_reply ? `<div style="margin-top:8px; padding:8px; background:#e8f5e9; border-left:3px solid #2ecc71; color:#27ae60; border-radius:4px;"><b>Company Reply:</b><br>${parsedReply}</div>` : ''; 
+                        
+                        html += `<tr><td><b>${c.type}</b><br><span style="font-size:10px; color:#999;">${c.date.split(',')[0]}</span></td><td><span style="background:${color}; color:#fff; padding:3px 6px; border-radius:5px; font-size:10px;">${c.status}</span></td></tr><tr><td colspan="2" style="font-size:12px; color:#555; background:#f9f9f9; border-bottom:2px solid #eee;"><b>Your Message:</b> ${c.message} ${replyHtml}</td></tr>`; 
+                    }); 
+                } 
+                document.getElementById('complaint-history-list').innerHTML = html || "<tr><td colspan='2' style='text-align:center;'>No complaints history.</td></tr>"; 
+            }); 
         }
 
         // ================= LEVELS & REWARDS =================
@@ -2259,7 +2354,7 @@
             let timings = [ 
                 { id: 'daily', duration: 86400000, last: userData.last_claim_daily || 0, max: 30, count: userData.reward_claims_login||0, amt: 20 }, 
                 { id: 'weekly', duration: 604800000, last: userData.last_claim_weekly||0, max: 30, count: userData.reward_claims_weekly||0, amt: 40 }, 
-                { id: 'monthly', duration: 2592000000, last: userData.last_claim_monthly||0, max: 30, count: userData.reward_claims_weekly||0, amt: 80 }, 
+                { id: 'monthly', duration: 2592000000, last: userData.last_claim_monthly||0, max: 30, count: userData.reward_claims_monthly||0, amt: 80 }, 
                 { id: 'yearly', duration: 31536000000, last: userData.last_claim_yearly||0, max: 10, count: userData.reward_claims_yearly||0, amt: 250 } 
             ]; 
             timings.forEach(t => { 
@@ -2574,6 +2669,7 @@
             document.getElementById('set-ip-bot').value = appSettings.multi_ip_bot_enabled !== undefined ? appSettings.multi_ip_bot_enabled.toString() : 'false';
 
             document.getElementById('set-notif').value = appSettings.notification_text || '';
+            document.getElementById('set-notif-link').value = appSettings.notification_link || ''; // NEW INPUT POPULATION
             document.getElementById('set-bank-name').value = appSettings.admin_name || 'M ASLAM';
             document.getElementById('set-bank-iban').value = appSettings.admin_iban || 'PK36TMFB0000000050698679';
             document.getElementById('set-inv-limit').value = appSettings.invite_limit !== undefined ? appSettings.invite_limit : 5;
@@ -2644,7 +2740,7 @@
             });
             
             let pendingComplaintsQuery = db.ref('complaints').orderByChild('status').equalTo('Pending');
-            pendingComplaintsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let c = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:12px;"><b>${c.name}</b> (${c.type})<br><div style="background:#f9f9f9; padding:5px; margin:5px 0; border-left:3px solid #3498db;">${c.message}</div><textarea id="comp-reply-${ch.key}" class="form-control" rows="2" placeholder="Write Company Reply here..." style="font-size:12px; padding:8px;"></textarea><button onclick="adminResolveComplaint('${ch.key}')" class="admin-btn approve-btn" style="width:100%;">Reply & Mark Resolved</button></div>`; }); } document.getElementById('admin-pending-complaints').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending complaints.</p>"; });
+            pendingComplaintsQuery.on('value', snap => { let html = ""; if(snap.exists()) { snap.forEach(ch => { let c = ch.val(); html += `<div style="background:#fff; padding:10px; border:1px solid #ddd; margin-bottom:5px; font-size:12px;"><b>${c.name}</b> (${c.type})<br><div style="background:#f9f9f9; padding:5px; margin:5px 0; border-left:3px solid #3498db;">${c.message}</div><textarea id="comp-reply-${ch.key}" class="form-control" rows="2" placeholder="Write Company Reply here... (Links like https://... will show as button to users)" style="font-size:12px; padding:8px;"></textarea><button onclick="adminResolveComplaint('${ch.key}')" class="admin-btn approve-btn" style="width:100%;">Reply & Mark Resolved</button></div>`; }); } document.getElementById('admin-pending-complaints').innerHTML = html || "<p style='font-size:13px; color:#777;'>No pending complaints.</p>"; });
             
             db.ref('users').once('value', snap => { 
                 let html = ""; 
@@ -2880,6 +2976,7 @@
             let ipBotVal = document.getElementById('set-ip-bot').value === 'true';
 
             let notif = document.getElementById('set-notif').value;
+            let notifLink = document.getElementById('set-notif-link').value.trim(); // NEW NOTIFICATION POPUP ACTION LINK EXTENSION
             let bName = document.getElementById('set-bank-name').value.trim();
             let bIban = document.getElementById('set-bank-iban').value.trim();
             let iLimit = parseInt(document.getElementById('set-inv-limit').value) || 0;
@@ -2898,6 +2995,7 @@
                 max_withdraw: maxW,
                 max_level_salary: maxSalary,
                 notification_text: notif,
+                notification_link: notifLink, // NEW ASSIGNMENT IN FIREBASE
                 admin_name: bName || "M ASLAM",
                 admin_iban: bIban || "PK36TMFB0000000050698679",
                 invite_limit: iLimit,
@@ -2972,7 +3070,20 @@
                     </div>
                 </div>`;
             }
+            
+            // RESET BUTTON IN DATABASE CONTAINER TO ALIGN ALL USER DESIRED CONFIGS IN REALTIME (NEW)
+            plansHtml += `<button onclick="adminResetPlansToDefault()" class="admin-btn approve-btn" style="width:100%; margin-top:10px; font-weight:bold;"><i class="fas fa-sync-alt"></i> Reset All Database Plans to New Prices</button>`;
+            
             document.getElementById('admin-manage-plans').innerHTML = plansHtml || "<p style='font-size:12px; color:#777;'>No plans available.</p>";
+        }
+
+        // NEW MANUAL HARD RESET HELPER
+        function adminResetPlansToDefault() {
+            if (confirm("Are you sure you want to reset all database plans to the default price configuration? This will update all existing plan prices on Firebase instantly.")) {
+                db.ref('plans').set(defaultPlans).then(() => {
+                    alert("Database Plans updated to requested prices successfully!");
+                });
+            }
         }
 
         function adminTogglePlanStatus(id, currentStatus) {
